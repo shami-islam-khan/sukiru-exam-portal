@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <title>Japanese Lesson 3 Practice</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #ffffff; width: 100%; max-width: 600px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 25px; }
+        
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: #e2e8f0; color: #4a5568; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: #3182ce; color: white; }
+
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 5px; }
+        select { width: 100%; padding: 10px; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; outline: none; background: white; }
+        select:focus { border-color: #3182ce; }
+
+        .btn-primary { width: 100%; padding: 12px; background: #3182ce; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #2b6cb0; }
+
+        /* Flashcard Styles */
+        .card-box { background: #edf2f7; border-radius: 12px; padding: 30px; text-align: center; margin-top: 15px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .jp-text { font-size: 2.2rem; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
+        .kanji-text { font-size: 1.2rem; color: #718096; margin-bottom: 15px; }
+        .mean-text { font-size: 1.1rem; color: #2b6cb0; font-weight: 600; }
+        .nav-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .nav-btn { flex: 1; padding: 10px; background: #4a5568; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* Quiz Styles */
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 10px; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 0.95rem; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: left; transition: 0.2s; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; }
+        .opt-btn.correct { background: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchMode('study')">Study (ফ্ল্যাশকার্ড)</button>
+        <button class="tab-btn" onclick="switchMode('quiz')">Quiz (কুইজ)</button>
+    </div>
+
+    <!-- FLASHCARD MODE -->
+    <div id="study-view">
+        <div class="form-group">
+            <label for="study-cat">ক্যাটাগরি নির্বাচন করুন:</label>
+            <select id="study-cat" onchange="loadCategoryWords()">
+                <option value="all">সব একসাথে (All Vocabulary)</option>
+                <option value="locations">স্থান ও নির্দেশক (Locations/Demonstratives)</option>
+                <option value="facilities">ভবন ও রুম (Facilities/Rooms)</option>
+                <option value="items">জিনিসপত্র ও কেনাকাটা (Items/Shopping)</option>
+                <option value="numbers">সংখ্যা ও মুদ্রা (Numbers/Money/Floors)</option>
+                <option value="phrases">বাক্য ও অভিবাদন (Phrases/Expressions)</option>
+            </select>
+        </div>
+
+        <div class="card-box">
+            <div class="jp-text" id="fc-jp">ここ</div>
+            <div class="kanji-text" id="fc-kanji">ここ (koko)</div>
+            <div class="mean-text" id="fc-mean">এখানে, এই জায়গা / Here, this place</div>
+        </div>
+
+        <div class="nav-btns">
+            <button class="nav-btn" onclick="prevCard()">আগেরটি</button>
+            <button class="nav-btn" onclick="toggleMeaning()">অর্থ লুকান/দেখুন</button>
+            <button class="nav-btn" onclick="nextCard()">পরেরটি</button>
+        </div>
+    </div>
+
+    <!-- QUIZ SETUP MODE -->
+    <div id="quiz-setup" class="hidden">
+        <h2 style="font-size: 1.3rem; color: #2d3748; margin-bottom: 15px;">Lesson 3 Quiz Setup</h2>
+        <div class="form-group">
+            <label for="quiz-cat">ক্যাটাগরি:</label>
+            <select id="quiz-cat">
+                <option value="all">সব একসাথে (All)</option>
+                <option value="locations">স্থান ও নির্দেশক</option>
+                <option value="facilities">ভবন ও রুম</option>
+                <option value="items">জিনিসপত্র ও কেনাকাটা</option>
+                <option value="numbers">সংখ্যা ও মুদ্রা</option>
+                <option value="phrases">বাক্য ও অভিবাদন</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quiz-limit">প্রশ্নের সংখ্যা:</label>
+            <select id="quiz-limit">
+                <option value="10">10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="all">সবগুলো</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="startQuiz()">কুইজ শুরু করুন</button>
+    </div>
+
+    <!-- QUIZ ACTIVE MODE -->
+    <div id="quiz-active" class="hidden">
+        <div class="progress" id="quiz-progress">Question 1 of 10</div>
+        <div class="card-box" style="min-height: 120px;">
+            <div class="jp-text" id="qz-question">ここ</div>
+        </div>
+        <div class="options-grid" id="qz-options"></div>
+    </div>
+
+    <!-- QUIZ RESULT MODE -->
+    <div id="quiz-result" class="hidden" style="text-align: center;">
+        <h2 style="color: #2d3748;">কুইজ সম্পন্ন হয়েছে!</h2>
+        <p id="qz-score" style="font-size: 1.2rem; font-weight: bold; color: #3182ce; margin: 20px 0;"></p>
+        <button class="btn-primary" onclick="resetQuiz()">আবার চেষ্টা করুন</button>
+    </div>
+</div>
+
+<script>
+const lesson3Data = {
+    locations: [
+        {j: "ここ", k: "ここ", r: "koko", bn: "এখানে, এই জায়গা", en: "Here, this place"},
+        {j: "そこ", k: "そこ", r: "soko", bn: "ওখানে, ২য় ব্যক্তির কাছে", en: "There, that place near you"},
+        {j: "あそこ", k: "あそこ", r: "asoko", bn: "ঐখানে (অনেক দূরের জায়গা)", en: "That place over there"},
+        {j: "どこ", k: "どこ", r: "doko", bn: "কোথায়, কোন জায়গায়", en: "Where, what place"},
+        {j: "こちら", k: "こちら", r: "kochira", bn: "এই দিকে, এই জায়গা (ভদ্র রূপ)", en: "This way, this place (polite)"},
+        {j: "そちら", k: "そちら", r: "sochira", bn: "সেদিকে/এদিকে, ঐ জায়গা (ভদ্র রূপ)", en: "That way, that place (polite)"},
+        {j: "あちら", k: "あちら", r: "achira", bn: "ঐদিকে, ঐ জায়গা (ভদ্র রূপ)", en: "That way, that place over there (polite)"},
+        {j: "どちら", k: "どちら", r: "dochira", bn: "কোন দিকে, কোথায় (ভদ্র রূপ)", en: "Which way, where (polite)"}
+    ],
+    facilities: [
+        {j: "きょうしつ", k: "教室", r: "kyoushitsu", bn: "শ্রেণীকক্ষ", en: "Classroom"},
+        {j: "しょくどう", k: "食堂", r: "shokudou", bn: "খাবার জায়গা, ক্যান্টিন", en: "Dining hall, canteen"},
+        {j: "じむしょ", k: "事務所", r: "jimusho", bn: "অফিস", en: "Office"},
+        {j: "かいぎしつ", k: "会議室", r: "kaigishitsu", bn: "সমাবেশ কক্ষ, মিটিং রুম", en: "Conference room"},
+        {j: "うけつけ", k: "受付", r: "uketsuke", bn: "অভ্যর্থনা ডেস্ক", en: "Reception desk"},
+        {j: "ロビー", k: "ロビー", r: "robi-", bn: "করিডোর / লবি", en: "Lobby"},
+        {j: "へや", k: "部屋", r: "heya", bn: "কক্ষ, রুম", en: "Room"},
+        {j: "トイレ (おてあらい)", k: "お手洗い", r: "toire (otearai)", bn: "টয়লেট, বিশ্রামঘর", en: "Toilet, rest room"},
+        {j: "かいだん", k: "階段", r: "kaidan", bn: "সিঁড়ি", en: "Staircase"},
+        {j: "エレベーター", k: "エレベーター", r: "erebe-ta-", bn: "এলভেটর, লিফট", en: "Elevator, lift"},
+        {j: "エスカレーター", k: "エスカレーター", r: "esukare-ta-", bn: "চলন্ত সিঁড়ি", en: "Escalator"},
+        {j: "ちか", k: "地下", r: "chika", bn: "নিচতলা / আন্ডারগ্রাউন্ড", en: "Basement"}
+    ],
+    items: [
+        {j: "かいしゃ", k: "会社", r: "kaisha", bn: "কোম্পানি", en: "Company"},
+        {j: "うち", k: "家", r: "uchi", bn: "বাড়ি", en: "House, home"},
+        {j: "でんわ", k: "電話", r: "denwa", bn: "টেলিফোন, কল", en: "Telephone, telephone call"},
+        {j: "くつ", k: "靴", r: "kutsu", bn: "জুতা", en: "Shoes"},
+        {j: "ネクタイ", k: "ネクタイ", r: "nekutai", bn: "গলার টাই", en: "Necktie"},
+        {j: "ワイン", k: "ワイン", r: "wain", bn: "ওয়াইন", en: "Wine"},
+        {j: "たばこ", k: "たばこ", r: "tabako", bn: "টুব্যাকো, সিগারেট", en: "Tobacco, cigarette"},
+        {j: "うりば", k: "売り場", r: "uriba", bn: "ডিপার্টমেন্ট, কাউন্টার", en: "Department, counter"},
+        {j: "[お]くに", k: "[お]国", r: "okuni", bn: "দেশ (সম্মানসূচক)", en: "Country"}
+    ],
+    numbers: [
+        {j: "～かい (～がい)", k: "階", r: "kai (gai)", bn: "～ তলা", en: "-th floor"},
+        {j: "なんがい", k: "何階", r: "nangai", bn: "কোন তলা, কয় তলা", en: "What floor"},
+        {j: "～えん", k: "～円", r: "en", bn: "জাপানি মুদ্রা (ইয়েন)", en: "-Yen"},
+        {j: "いくら", k: "いくら", r: "ikura", bn: "কত? (দাম)", en: "How much"},
+        {j: "ひゃく", k: "百", r: "hyaku", bn: "একশত", en: "Hundred"},
+        {j: "せん", k: "千", r: "sen", bn: "হাজার", en: "Thousand"},
+        {j: "まん", k: "万", r: "man", bn: "দশ হাজার", en: "Ten thousand"}
+    ],
+    phrases: [
+        {j: "すみません", k: "すみません", r: "sumimasen", bn: "দুঃখিত / মাফ করবেন", en: "Excuse me"},
+        {j: "～でございます", k: "～でございます", r: "de gozaimasu", bn: "です এর নম্র ও সম্মানজনক রূপ", en: "Polite equivalent of です"},
+        {j: "[～を] みせて ください", k: "見せてください", r: "misete kudasai", bn: "[～] দয়া করে দেখান", en: "Please show me [～]"},
+        {j: "じゃ", k: "じゃ", r: "ja", bn: "ভাল, তারপরে, এক্ষেত্রে", en: "Well, then, in that case"},
+        {j: "[～を] ください", k: "ください", r: "kudasai", bn: "[～] আমাকে দেন, দয়া করে", en: "Give me [～], please"},
+        {j: "しんおおさか", k: "新大阪", r: "shin-osaka", bn: "ওসাকার স্টেশনের নাম", en: "Name of a station in Osaka"},
+        {j: "イタリア", k: "イタリア", r: "itaria", bn: "ইতালি", en: "Italy"},
+        {j: "スイス", k: "スイス", r: "suisu", bn: "সুইজারল্যান্ড", en: "Switzerland"}
+    ]
+};
+
+// FLASHCARD VARS
+let currentCardList = [];
+let cardIndex = 0;
+let showMean = true;
+
+// QUIZ VARS
+let quizList = [];
+let quizIndex = 0;
+let score = 0;
+
+function switchMode(mode) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('study-view').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+
+    if (mode === 'study') {
+        event.target.classList.add('active');
+        document.getElementById('study-view').classList.remove('hidden');
+        loadCategoryWords();
+    } else {
+        event.target.classList.add('active');
+        document.getElementById('quiz-setup').classList.remove('hidden');
+    }
+}
+
+function loadCategoryWords() {
+    const cat = document.getElementById('study-cat').value;
+    if (cat === 'all') {
+        currentCardList = [];
+        Object.keys(lesson3Data).forEach(k => currentCardList.push(...lesson3Data[k]));
+    } else {
+        currentCardList = [...lesson3Data[cat]];
+    }
+    cardIndex = 0;
+    renderCard();
+}
+
+function renderCard() {
+    const item = currentCardList[cardIndex];
+    document.getElementById('fc-jp').innerText = item.j;
+    document.getElementById('fc-kanji').innerText = `${item.k} (${item.r})`;
+    const meanElem = document.getElementById('fc-mean');
+    meanElem.innerText = `${item.bn} / ${item.en}`;
+    meanElem.style.visibility = showMean ? 'visible' : 'hidden';
+}
+
+function nextCard() {
+    cardIndex = (cardIndex + 1) % currentCardList.length;
+    renderCard();
+}
+
+function prevCard() {
+    cardIndex = (cardIndex - 1 + currentCardList.length) % currentCardList.length;
+    renderCard();
+}
+
+function toggleMeaning() {
+    showMean = !showMean;
+    renderCard();
+}
+
+// QUIZ LOGIC
+function startQuiz() {
+    const cat = document.getElementById('quiz-cat').value;
+    const limit = document.getElementById('quiz-limit').value;
+
+    let pool = [];
+    if (cat === 'all') {
+        Object.keys(lesson3Data).forEach(k => pool.push(...lesson3Data[k]));
+    } else {
+        pool = [...lesson3Data[cat]];
+    }
+
+    pool.sort(() => Math.random() - 0.5);
+    const count = limit === 'all' ? pool.length : Math.min(parseInt(limit), pool.length);
+    quizList = pool.slice(0, count);
+
+    quizIndex = 0;
+    score = 0;
+
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.remove('hidden');
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    const q = quizList[quizIndex];
+    document.getElementById('quiz-progress').innerText = `Question ${quizIndex + 1} of ${quizList.length}`;
+    document.getElementById('qz-question').innerText = q.j;
+
+    let allPool = [];
+    Object.keys(lesson3Data).forEach(k => allPool.push(...lesson3Data[k]));
+
+    let options = [q];
+    while (options.length < 4) {
+        let rand = allPool[Math.floor(Math.random() * allPool.length)];
+        if (!options.some(opt => opt.j === rand.j)) options.push(rand);
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('qz-options');
+    container.innerHTML = '';
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = `${opt.bn} (${opt.en})`;
+        btn.dataset.correct = (opt.j === q.j);
+        btn.onclick = (e) => handleAnswer(e.target, opt.j === q.j);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(btn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        allBtns.forEach(b => {
+            if (b.dataset.correct === 'true') b.classList.add('correct');
+        });
+    }
+
+    setTimeout(() => {
+        quizIndex++;
+        if (quizIndex < quizList.length) {
+            showQuizQuestion();
+        } else {
+            showQuizResult();
+        }
+    }, 1000);
+}
+
+function showQuizResult() {
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.remove('hidden');
+    document.getElementById('qz-score').innerText = `আপনি ${quizList.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+}
+
+function resetQuiz() {
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.remove('hidden');
+}
+
+// Initial Load
+loadCategoryWords();
+</script>
+</body>
+</html>

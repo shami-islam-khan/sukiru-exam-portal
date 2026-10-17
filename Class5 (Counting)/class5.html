@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <title>Japanese Lesson Practice Quiz</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 520px; text-align: center; }
+        h1 { color: #1a202c; font-size: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; text-align: left; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 0.5rem; }
+        select { width: 100%; padding: 0.8rem; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; background: white; outline: none; }
+        select:focus { border-color: #3182ce; }
+        button.start-btn { width: 100%; padding: 0.9rem; background: #3182ce; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 1rem; }
+        button.start-btn:hover { background: #2b6cb0; }
+        
+        .hidden { display: none; }
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 0.5rem; }
+        .char-display { font-size: 2.2rem; margin: 0.8rem 0; color: #2d3748; font-weight: bold; word-break: break-all; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 1.5rem; }
+        
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 1rem; padding: 0.85rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; text-align: center; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; border-color: #cbd5e0; }
+        .opt-btn:disabled { cursor: not-allowed; }
+        
+        .opt-btn.correct { background-color: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background-color: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- SETUP SCREEN -->
+    <div id="setup-screen">
+        <h1 id="ui-title">Japanese Practice Quiz (জাপানিজ কুইজ)</h1>
+        
+        <div class="form-group">
+            <label for="lang">Language / ভাষা:</label>
+            <select id="lang" onchange="updateLanguageUI()">
+                <option value="both">Both (English + বাংলা)</option>
+                <option value="bn">বাংলা (Bangla)</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lbl-category" for="category">Select Category / ক্যাটাগরি:</label>
+            <select id="category">
+                <option value="people" id="opt-people">People Counter / মানুষ গণনা (なにん)</option>
+                <option value="age" id="opt-age">Age Counter / বয়স গণনা (なんさい)</option>
+                <option value="days" id="opt-days">Days of Week / সাত দিনের নাম (なんようび)</option>
+                <option value="objects" id="opt-objects">Objects / বস্তু গণনা (いくつ - つ)</option>
+                <option value="ko" id="opt-ko">Small Items / ছোট জিনিস (〜こ)</option>
+                <option value="counters" id="opt-counters">Counters List / কাউন্টার সমুহ (だい, まい, かい...)</option>
+                <option value="all" id="opt-all">All Combined (সব একসাথে)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lbl-limit" for="limit">Select Limit / প্রশ্নের সংখ্যা:</label>
+            <select id="limit">
+                <option value="10">10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="all">All Available</option>
+            </select>
+        </div>
+
+        <button class="start-btn" id="btn-start" onclick="startQuiz()">Start Practice / শুরু করুন</button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="hidden">
+        <div class="progress" id="progress-text">Question 1 of 10</div>
+        <div class="char-display" id="item-display">1 Person</div>
+        <div class="options-grid" id="options-container"></div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden">
+        <h1 id="res-title">Quiz Complete!</h1>
+        <p id="score-text" style="font-size: 1.2rem; margin: 1.5rem 0; color: #2d3748; font-weight: 600;"></p>
+        <button class="start-btn" id="btn-restart" onclick="resetQuiz()">Practice Again</button>
+    </div>
+</div>
+
+<script>
+const dataSets = {
+    people: [
+        {q: "1 Person (১ জন)", j: "ひとり", r: "hitori", bn: "হিতোরি"},
+        {q: "2 Persons (২ জন)", j: "ふたり", r: "futari", bn: "ফুতারি"},
+        {q: "3 Persons (৩ জন)", j: "さんにん", r: "sannin", bn: "সাননিন"},
+        {q: "4 Persons (৪ জন)", j: "よんにん", r: "yonnin", bn: "ইয়ননিন"},
+        {q: "5 Persons (৫ জন)", j: "ごにん", r: "gonin", bn: "গো নিন"},
+        {q: "6 Persons (৬ জন)", j: "ろくにん", r: "rokunin", bn: "রোকুনিন"},
+        {q: "7 Persons (৭ জন)", j: "しちにん", r: "shichinin", bn: "শিচিনিন"},
+        {q: "8 Persons (৮ জন)", j: "はちにん", r: "hachinin", bn: "হাচিনিন"},
+        {q: "9 Persons (৯ জন)", j: "きゅうにん", r: "kyuunin", bn: "কিউনিন"},
+        {q: "10 Persons (১০ জন)", j: "じゅうにん", r: "juunin", bn: "জুনিন"},
+        {q: "100 Persons (১০০ জন)", j: "ひゃくにん", r: "hyakunin", bn: "হিয়াকুনিন"},
+        {q: "201 Persons (২০১ জন)", j: "にひゃくいちにん", r: "nihyaku ichinin", bn: "নিহিয়াকু ইচিনিন"}
+    ],
+    age: [
+        {q: "1 Year Old (১ বছর)", j: "いっさい", r: "issai", bn: "ইচ্ছাই"},
+        {q: "2 Years Old (২ বছর)", j: "にさい", r: "nisai", bn: "নিছাই"},
+        {q: "3 Years Old (৩ বছর)", j: "さんさい", r: "sansai", bn: "সানছাই"},
+        {q: "4 Years Old (৪ বছর)", j: "よんさい", r: "yonsai", bn: "ইয়নছাই"},
+        {q: "5 Years Old (৫ বছর)", j: "ごさい", r: "gosai", bn: "গোছাই"},
+        {q: "6 Years Old (৬ বছর)", j: "ろくさい", r: "rokusai", bn: "রোকুছাই"},
+        {q: "7 Years Old (৭ বছর)", j: "ななさい", r: "nanasai", bn: "নানাছাই"},
+        {q: "8 Years Old (৮ বছর)", j: "はっさい", r: "hassai", bn: "হাচ্ছাই"},
+        {q: "9 Years Old (৯ বছর)", j: "きゅうさい", r: "kyuusai", bn: "কিউছাই"},
+        {q: "10 Years Old (১০ বছর)", j: "じゅうさい", r: "juusai", bn: "জুছাই"},
+        {q: "20 Years Old (২০ বছর)", j: "はたち", r: "hatachi", bn: "হাতাচি"},
+        {q: "27 Years Old (২৭ বছর)", j: "にじゅうななさい", r: "nijuu nanasai", bn: "নিজু নানাসাই"},
+        {q: "35 Years Old (৩৫ বছর)", j: "さんじゅうごさい", r: "sanjuu gosai", bn: "সানজু গোসাই"},
+        {q: "43 Years Old (৪৩ বছর)", j: "よんじゅうさんさい", r: "yonjuu sansai", bn: "ইয়নজু সানসাই"}
+    ],
+    days: [
+        {q: "Sunday (রবিবার)", j: "にちようび", r: "nichiyoubi", bn: "নিচিয়োবি"},
+        {q: "Monday (সোমবার)", j: "げつようび", r: "getsuyoubi", bn: "গেৎসু ইয়োবি"},
+        {q: "Tuesday (মঙ্গলবার)", j: "かようび", r: "kayoubi", bn: "কা ইয়োবি"},
+        {q: "Wednesday (বুধবার)", j: "すいようび", r: "suiyoubi", bn: "সুই ইয়োবি"},
+        {q: "Thursday (বৃহস্পতিবার)", j: "もくようび", r: "mokuyoubi", bn: "মোকু ইয়োবি"},
+        {q: "Friday (শুক্রবার)", j: "きんようび", r: "kinyoubi", bn: "কিন ইয়োবি"},
+        {q: "Saturday (শনিবার)", j: "どようび", r: "doyoubi", bn: "দো ইয়োবি"}
+    ],
+    objects: [
+        {q: "1 Piece (১টি)", j: "ひとつ", r: "hitotsu", bn: "হিতোৎসু"},
+        {q: "2 Pieces ( ২টি)", j: "ふたつ", r: "futatsu", bn: "ফুতাত্সু"},
+        {q: "3 Pieces ( ৩টি)", j: "みっつ", r: "mittsu", bn: "মিৎসু"},
+        {q: "4 Pieces ( ৪টি)", j: "よっつ", r: "yottsu", bn: "ইয়োৎসু"},
+        {q: "5 Pieces ( ৫টি)", j: "いつつ", r: "itsutsu", bn: "ইত্সুৎসু"},
+        {q: "6 Pieces ( ৬টি)", j: "むっつ", r: "muttsu", bn: "মুৎসু"},
+        {q: "7 Pieces ( ৭টি)", j: "ななつ", r: "nanatsu", bn: "নানাৎসু"},
+        {q: "8 Pieces ( ৮টি)", j: "やっつ", r: "yattsu", bn: "ইয়াৎসু"},
+        {q: "9 Pieces ( ৯টি)", j: "ここのつ", r: "kokonotsu", bn: "কোকোনোৎসু"},
+        {q: "10 Pieces (১০টি)", j: "とお", r: "too", bn: "তোও"}
+    ],
+    ko: [
+        {q: "20 Small Items (২০টি)", j: "にじゅうこ", r: "nijuuko", bn: "নিঝুকো"},
+        {q: "25 Small Items (২৫টি)", j: "にじゅうごこ", r: "nijūgoko", bn: "নিঝুগোকো"},
+        {q: "110 Small Items (১১০টি)", j: "ひゃくじゅうこ", r: "hyakujūko", bn: "হিয়াকুজুকো"},
+        {q: "227 Small Items (২২৭টি)", j: "にひゃくにじゅうななこ", r: "nihyakunijūnanako", bn: "নিহিয়াকু নিজু নানাকো"}
+    ],
+    counters: [
+        {q: "Vehicles / Machines (গাড়ি, কম্পিউটার, মেসিন)", j: "〜だい", r: "dai", bn: "দাই (উদাহরণ: 車 2台 → にだい)"},
+        {q: "Flat Items (পাতলা জিনিস: কাগজ, ছবি, টিকিট)", j: "〜まい", r: "mai", bn: "মাই (উদাহরণ: 紙 3枚 → さんまい)"},
+        {q: "Floors (তলার বিবরণ)", j: "〜かい", r: "kai", bn: "কাই (উদাহরণ: 3rd Floor → さんかい)"},
+        {q: "People Counter (মানুষ গণনা)", j: "〜にん", r: "nin", bn: "নিন (উদাহরণ: 5 คน/জন → ごにん)"},
+        {q: "Small Objects (ছোট জিনিস: আপেল, ডিম, বল)", j: "〜こ", r: "ko", bn: "কো (উদাহরণ: 4টি → よんこ)"}
+    ]
+};
+
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let selectedLang = 'both';
+
+function updateLanguageUI() {
+    selectedLang = document.getElementById('lang').value;
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('ui-title').innerText = "জাপানিজ কাউন্টার কুইজ";
+        document.getElementById('lbl-category').innerText = "ক্যাটাগরি সিলেক্ট করুন:";
+        document.getElementById('opt-people').innerText = "মানুষ গণনা (なにん)";
+        document.getElementById('opt-age').innerText = "বয়স গণনা (なんさい)";
+        document.getElementById('opt-days').innerText = "সাত দিনের নাম (なんようび)";
+        document.getElementById('opt-objects').innerText = "বস্তু গণনা (いくつ - つ)";
+        document.getElementById('opt-ko').innerText = "ছোট জিনিস (〜こ)";
+        document.getElementById('opt-counters').innerText = "কাউন্টার তালিকা (だい, まい, かい...)";
+        document.getElementById('opt-all').innerText = "সব একসাথে";
+        document.getElementById('lbl-limit').innerText = "প্রশ্নের সংখ্যা নির্ধারণ করুন:";
+        document.getElementById('btn-start').innerText = "প্র্যাকটিস শুরু করুন";
+    } else if (selectedLang === 'en') {
+        document.getElementById('ui-title').innerText = "Japanese Counters Quiz";
+        document.getElementById('lbl-category').innerText = "Select Category:";
+        document.getElementById('opt-people').innerText = "People Counter";
+        document.getElementById('opt-age').innerText = "Age Counter";
+        document.getElementById('opt-days').innerText = "Days of Week";
+        document.getElementById('opt-objects').innerText = "Objects Counter (つ)";
+        document.getElementById('opt-ko').innerText = "Small Items (〜こ)";
+        document.getElementById('opt-counters').innerText = "Counters List";
+        document.getElementById('opt-all').innerText = "All Combined";
+        document.getElementById('lbl-limit').innerText = "Select Questions Limit:";
+        document.getElementById('btn-start').innerText = "Start Practice";
+    } else {
+        document.getElementById('ui-title').innerText = "Japanese Practice Quiz (জাপানিজ কুইজ)";
+        document.getElementById('lbl-category').innerText = "Select Category / ক্যাটাগরি:";
+        document.getElementById('opt-people').innerText = "People Counter / মানুষ গণনা (なにん)";
+        document.getElementById('opt-age').innerText = "Age Counter / বয়স গণনা (なんさい)";
+        document.getElementById('opt-days').innerText = "Days of Week / সাত দিনের নাম (なんようび)";
+        document.getElementById('opt-objects').innerText = "Objects / বস্তু গণনা (いくつ - つ)";
+        document.getElementById('opt-ko').innerText = "Small Items / ছোট জিনিস (〜こ)";
+        document.getElementById('opt-counters').innerText = "Counters List / কাউন্টার সমুহ";
+        document.getElementById('opt-all').innerText = "All Combined (সব একসাথে)";
+        document.getElementById('lbl-limit').innerText = "Select Limit / প্রশ্নের সংখ্যা:";
+        document.getElementById('btn-start').innerText = "Start Practice / শুরু করুন";
+    }
+}
+
+function getFormattedOption(item) {
+    if (selectedLang === 'bn') return `${item.j} - ${item.bn}`;
+    if (selectedLang === 'en') return `${item.j} (${item.r})`;
+    return `${item.j} [${item.r}] - ${item.bn}`;
+}
+
+function startQuiz() {
+    const category = document.getElementById('category').value;
+    const limitVal = document.getElementById('limit').value;
+
+    let pool = [];
+    if (category === 'all') {
+        pool = [
+            ...dataSets.people,
+            ...dataSets.age,
+            ...dataSets.days,
+            ...dataSets.objects,
+            ...dataSets.ko,
+            ...dataSets.counters
+        ];
+    } else {
+        pool = [...dataSets[category]];
+    }
+
+    pool.sort(() => Math.random() - 0.5);
+
+    const limit = limitVal === 'all' ? pool.length : Math.min(parseInt(limitVal), pool.length);
+    currentQuestions = pool.slice(0, limit);
+
+    currentIndex = 0;
+    score = 0;
+
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+
+    showQuestion();
+}
+
+function showQuestion() {
+    const q = currentQuestions[currentIndex];
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('progress-text').innerText = `প্রশ্ন ${currentIndex + 1} / ${currentQuestions.length}`;
+    } else {
+        document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} of ${currentQuestions.length}`;
+    }
+
+    document.getElementById('item-display').innerText = q.q;
+
+    const allPool = [
+        ...dataSets.people,
+        ...dataSets.age,
+        ...dataSets.days,
+        ...dataSets.objects,
+        ...dataSets.ko,
+        ...dataSets.counters
+    ];
+    let options = [q];
+
+    while (options.length < 4) {
+        let randItem = allPool[Math.floor(Math.random() * allPool.length)];
+        if (!options.some(opt => opt.j === randItem.j)) {
+            options.push(randItem);
+        }
+    }
+
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = getFormattedOption(opt);
+        btn.dataset.correct = (opt.j === q.j);
+        btn.onclick = (e) => handleAnswer(e.target, opt.j === q.j);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(selectedBtn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    allBtns.forEach(btn => btn.disabled = true);
+
+    if (isCorrect) {
+        selectedBtn.classList.add('correct');
+        score++;
+    } else {
+        selectedBtn.classList.add('wrong');
+        allBtns.forEach(btn => {
+            if (btn.dataset.correct === "true") {
+                btn.classList.add('correct');
+            }
+        });
+    }
+
+    setTimeout(() => {
+        currentIndex++;
+        if (currentIndex < currentQuestions.length) {
+            showQuestion();
+        } else {
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function endQuiz() {
+    document.getElementById('quiz-screen').classList.add('hidden');
+    document.getElementById('result-screen').classList.remove('hidden');
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('res-title').innerText = "কুইজ সম্পন্ন হয়েছে!";
+        document.getElementById('score-text').innerText = `আপনি ${currentQuestions.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+        document.getElementById('btn-restart').innerText = "আবার প্র্যাকটিস করুন";
+    } else {
+        document.getElementById('res-title').innerText = "Quiz Complete!";
+        document.getElementById('score-text').innerText = `You scored ${score} out of ${currentQuestions.length}!`;
+        document.getElementById('btn-restart').innerText = "Practice Again";
+    }
+}
+
+function resetQuiz() {
+    document.getElementById('result-screen').classList.add('hidden');
+    document.getElementById('setup-screen').classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>

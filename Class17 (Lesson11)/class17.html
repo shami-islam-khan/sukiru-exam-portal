@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <title>Japanese Lesson 11 Practice</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #ffffff; width: 100%; max-width: 650px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 25px; }
+        
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: #e2e8f0; color: #4a5568; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: #2b6cb0; color: white; }
+
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 5px; }
+        select { width: 100%; padding: 10px; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; outline: none; background: white; }
+        select:focus { border-color: #2b6cb0; }
+
+        .btn-primary { width: 100%; padding: 12px; background: #2b6cb0; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #2c5282; }
+
+        /* Flashcard Styles */
+        .card-box { background: #edf2f7; border-radius: 12px; padding: 25px; text-align: center; margin-top: 15px; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .jp-text { font-size: 2.2rem; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
+        .kanji-text { font-size: 1.2rem; color: #718096; margin-bottom: 15px; }
+        .mean-text { font-size: 1.1rem; color: #2b6cb0; font-weight: 600; }
+        .nav-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .nav-btn { flex: 1; padding: 10px; background: #4a5568; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* Quiz Styles */
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 10px; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 0.95rem; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: left; transition: 0.2s; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; }
+        .opt-btn.correct { background: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchMode('study', event)">Study (ফ্ল্যাশকার্ড)</button>
+        <button class="tab-btn" onclick="switchMode('quiz', event)">Quiz (কুইজ)</button>
+    </div>
+
+    <!-- FLASHCARD MODE -->
+    <div id="study-view">
+        <div class="form-group">
+            <label for="study-cat">ক্যাটাগরি নির্বাচন করুন:</label>
+            <select id="study-cat" onchange="loadCategoryWords()">
+                <option value="all">সব একসাথে (All Vocabulary)</option>
+                <option value="verbs">ক্রিয়াপদ (Verbs)</option>
+                <option value="counters">গণনাকারী শব্দ (Counters & Numbers)</option>
+                <option value="food_items">খাবার ও ডাকদ্রব্য (Food & Post Items)</option>
+                <option value="family">পরিবার (Family Terms)</option>
+                <option value="time_duration">সময় ও সময়কাল (Time & Duration)</option>
+                <option value="phrases">বাক্যাংশ ও কথ্য অভিব্যক্তি (Phrases & Expressions)</option>
+            </select>
+        </div>
+
+        <div class="card-box">
+            <div class="jp-text" id="fc-jp">います [こどもが～]</div>
+            <div class="kanji-text" id="fc-kanji">います [子供が～] (imasu [kodomo ga~])</div>
+            <div class="mean-text" id="fc-mean">আছে (বাচ্চা) / Have (a child)</div>
+        </div>
+
+        <div class="nav-btns">
+            <button class="nav-btn" onclick="prevCard()">আগেরটি</button>
+            <button class="nav-btn" onclick="toggleMeaning()">অর্থ লুকান/দেখুন</button>
+            <button class="nav-btn" onclick="nextCard()">পরেরটি</button>
+        </div>
+    </div>
+
+    <!-- QUIZ SETUP MODE -->
+    <div id="quiz-setup" class="hidden">
+        <h2 style="font-size: 1.3rem; color: #2d3748; margin-bottom: 15px;">Lesson 11 Quiz Setup</h2>
+        <div class="form-group">
+            <label for="quiz-cat">ক্যাটাগরি:</label>
+            <select id="quiz-cat">
+                <option value="all">সব একসাথে (All)</option>
+                <option value="verbs">ক্রিয়াপদ (Verbs)</option>
+                <option value="counters">গণনাকারী শব্দ (Counters & Numbers)</option>
+                <option value="food_items">খাবার ও ডাকদ্রব্য (Food & Post Items)</option>
+                <option value="family">পরিবার (Family Terms)</option>
+                <option value="time_duration">সময় ও সময়কাল (Time & Duration)</option>
+                <option value="phrases">বাক্যাংশ ও কথ্য অভিব্যক্তি (Phrases & Expressions)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quiz-limit">প্রশ্নের সংখ্যা:</label>
+            <select id="quiz-limit">
+                <option value="10">10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="all">সবগুলো</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="startQuiz()">কুইজ শুরু করুন</button>
+    </div>
+
+    <!-- QUIZ ACTIVE MODE -->
+    <div id="quiz-active" class="hidden">
+        <div class="progress" id="quiz-progress">Question 1 of 10</div>
+        <div class="card-box" style="min-height: 120px;">
+            <div class="jp-text" id="qz-question">います [こどもが～]</div>
+        </div>
+        <div class="options-grid" id="qz-options"></div>
+    </div>
+
+    <!-- QUIZ RESULT MODE -->
+    <div id="quiz-result" class="hidden" style="text-align: center;">
+        <h2 style="color: #2d3748;">কুইজ সম্পন্ন হয়েছে!</h2>
+        <p id="qz-score" style="font-size: 1.2rem; font-weight: bold; color: #2b6cb0; margin: 20px 0;"></p>
+        <button class="btn-primary" onclick="resetQuiz()">আবার চেষ্টা করুন</button>
+    </div>
+</div>
+
+<script>
+const lesson11Data = {
+    verbs: [
+        {j: "います [こどもが～]", k: "います [子供が～]", r: "imasu [kodomo ga~]", bn: "আছে (বাচ্চা)", en: "Have [a child]"},
+        {j: "います [にほん に～]", k: "います [日本に～]", r: "imasu [nihon ni~]", bn: "অবস্থান, থাকা (জাপানে)", en: "Stay, be [in Japan]"},
+        {j: "かかります", k: "かかります", r: "kakarimasu", bn: "নেওয়া, লাগা (সময় বা টাকা)", en: "Take (time or money)"},
+        {j: "やすみます [かいしゃ を～]", k: "休みます [会社を～]", r: "yasumimasu [kaisha o~]", bn: "ছুটি নেওয়া (কাজ থেকে)", en: "Take a day off [work]"},
+        {j: "いらっしゃいます", k: "いらっしゃいます", r: "irasshaimasu", bn: "আছেন, থাকেন (আছেন, থাকেন এর সম্মানসূচক রূপ)", en: "Be (honorific equivalent of imasu)"}
+    ],
+    counters: [
+        {j: "ひとつ", k: "1つ", r: "hitotsu", bn: "এক (সাধারণ জিনিস গণনার ক্ষেত্রে বসে)", en: "One (used when counting things)"},
+        {j: "ふたつ", k: "2つ", r: "futatsu", bn: "দুই", en: "Two"},
+        {j: "みっつ", k: "3つ", r: "mittsu", bn: "তিন", en: "Three"},
+        {j: "よっつ", k: "4つ", r: "yottsu", bn: "চার", en: "Four"},
+        {j: "いつつ", k: "5つ", r: "itsutsu", bn: "পাঁচ", en: "Five"},
+        {j: "むっつ", k: "6つ", r: "muttsu", bn: "ছয়", en: "Six"},
+        {j: "ななつ", k: "7つ", r: "nanatsu", bn: "সাত", en: "Seven"},
+        {j: "やっつ", k: "8つ", r: "yattsu", bn: "আট", en: "Eight"},
+        {j: "ここのつ", k: "9つ", r: "kokonotsu", bn: "নয়", en: "Nine"},
+        {j: "とお", k: "10", r: "too", bn: "দশ", en: "Ten"},
+        {j: "いくつ", k: "いくつ", r: "ikutsu", bn: "কয়টা?", en: "How many"},
+        {j: "ひとり", k: "一人", r: "hitori", bn: "একজন", en: "One person"},
+        {j: "ふたり", k: "二人", r: "futari", bn: "দুইজন", en: "Two person"},
+        {j: "～にん", k: "～人", r: "~nin", bn: "～ মানুষ", en: "~people"},
+        {j: "～だい", k: "～台", r: "~dai", bn: "ভারী জিনিস (যন্ত্রপাতি, গাড়ি ইত্যাদি) গণনার ক্ষেত্রে ব্যবহার হয়", en: "Count for Machines, cars, etc."},
+        {j: "～まい", k: "～枚", r: "~mai", bn: "পাতলা জিনিস (কাগজ, স্ট্যাম্পস, শার্ট ইত্যাদি) গণনার ক্ষেত্রে ব্যবহার হয়", en: "Count for paper, stamps, shirt, etc."},
+        {j: "～かい", k: "～回", r: "~kai", bn: "সময় গণনা, কত বার", en: "~times"}
+    ],
+    food_items: [
+        {j: "りんご", k: "りんご", r: "ringo", bn: "আপেল", en: "Apple"},
+        {j: "みかん", k: "みかん", r: "mikan", bn: "চায়না কমলা", en: "Mandarin orange"},
+        {j: "サンドイッチ", k: "サンドイッチ", r: "sandoicchi", bn: "স্য্যান্ডউইচ", en: "Sandwich"},
+        {j: "カレー [ライス]", k: "カレー [ライス]", r: "karee [raisu]", bn: "তরকারি (এবং ভাত)", en: "Curry [and rice]"},
+        {j: "アイスクリーム", k: "アイスクリーム", r: "aisukuriimu", bn: "আইসক্রিম", en: "Ice cream"},
+        {j: "きって", k: "切手", r: "kitte", bn: "ডাকটিকিট", en: "Postage stamp"},
+        {j: "はがき", k: "葉書", r: "hagaki", bn: "পোস্ট কার্ড", en: "Post card"},
+        {j: "ふうとう", k: "封筒", r: "fuutou", bn: "খাম", en: "Envelope"},
+        {j: "そくたつ", k: "速達", r: "sokutatsu", bn: "বিশেষ বিতরণ", en: "Special delivery"},
+        {j: "かきとめ", k: "書留", r: "kakitome", bn: "নিবন্ধিত মেইল", en: "Registered mail"},
+        {j: "エアメール [こうくうびん]", k: "エアメール [航空便]", r: "eameeru [koukuubin]", bn: "এয়ারমেইল", en: "Airmail"},
+        {j: "ふなびん", k: "船便", r: "funabin", bn: "সমূদ্রের মেইল", en: "Sea mail"}
+    ],
+    family: [
+        {j: "りょうしん", k: "両親", r: "ryoushin", bn: "পিতামাতা", en: "Parents"},
+        {j: "きょうだい", k: "兄弟", r: "kyoudai", bn: "ভাই", en: "Brothers"},
+        {j: "しまい", k: "姉妹", r: "shimai", bn: "বোন", en: "Sisters"},
+        {j: "あに", k: "兄", r: "ani", bn: "নিজের বড় ভাই", en: "My elder brother"},
+        {j: "おにいさん", k: "お兄さん", r: "oniisan", bn: "অন্যের বড় ভাই", en: "Someone else's elder brother"},
+        {j: "あね", k: "姉", r: "ane", bn: "নিজের বড় বোন", en: "My elder sister"},
+        {j: "おねえさん", k: "お姉さん", r: "oneesan", bn: "অন্যের বড় বোন", en: "Someone else's elder sister"},
+        {j: "おとうと", k: "弟", r: "otouto", bn: "নিজের ছোট ভাই", en: "My younger brother"},
+        {j: "おとうとさん", k: "弟さん", r: "otoutosan", bn: "অন্যের ছোট ভাই", en: "Someone else's younger brother"},
+        {j: "いもうと", k: "妹", r: "imouto", bn: "নিজের ছোট বোন", en: "My younger sister"},
+        {j: "いもうとさん", k: "妹さん", r: "imoutosan", bn: "অন্যের ছোট বোন", en: "Someone else's younger sister"}
+    ],
+    time_duration: [
+        {j: "がいこく", k: "外国", r: "gaikoku", bn: "বিদেশ", en: "Foreign country"},
+        {j: "～じかん", k: "～時間", r: "~jikan", bn: "～সময় / ঘণ্টা", en: "~hours"},
+        {j: "～しゅうかん", k: "～週間", r: "~shuukan", bn: "～সপ্তাহ", en: "~weeks"},
+        {j: "～かげつ", k: "～か月", r: "~kagetsu", bn: "～মাস", en: "~months"},
+        {j: "～ねん", k: "～年", r: "~nen", bn: "～বছর", en: "~years"},
+        {j: "～ぐらい", k: "～ぐらい", r: "~gurai", bn: "প্রায় ～", en: "About ~"},
+        {j: "どのくらい", k: "どのくらい", r: "dono kurai", bn: "কতক্ষণ, কত সময়", en: "How long"},
+        {j: "ぜんぶで", k: "全部で", r: "zenbu de", bn: "সর্বমোট", en: "In total"},
+        {j: "みんな", k: "皆", r: "minna", bn: "সবাই, সবকিছু", en: "All, everything"},
+        {j: "～だけ", k: "～だけ", r: "~dake", bn: "শুধু ～", en: "Only ~"},
+        {j: "～ごろ", k: "～ごろ", r: "~goro", bn: "প্রায় (সময়)", en: "About (time)"}
+    ],
+    phrases: [
+        {j: "いらっしゃいませ", k: "いらっしゃいませ", r: "irasshaimase", bn: "স্বাগতম। কিভাবে সাহায্য করতে পারি? (দোকানে গেস্ট বা কাস্টমার আসলে বলা হয়)", en: "Welcome. / May I help you? (a greeting to a customer or guest entering a shop, etc.)"},
+        {j: "いい [お] てんきですね", k: "いい [お] 天気ですね", r: "ii [o] tenki desu ne", bn: "সুন্দর আবহাওয়া, তাই নয় কি?", en: "Nice weather, isn't it?"},
+        {j: "おでかけですか", k: "お出かけですか", r: "odekake desu ka", bn: "বাইরে যাচ্ছো কি?", en: "Are you going out?"},
+        {j: "ちょっと ～まで", k: "ちょっと ～まで", r: "chotto ~ made", bn: "আমি একটু .....", en: "I'm just going to ~."},
+        {j: "いって いらっしゃい", k: "行っ て いらっしゃい", r: "itte irasshai", bn: "এতক্ষণ। (যাও এবং ফিরে এসো)", en: "So long. (go and come back)"},
+        {j: "いって まいります", k: "行っ て まいります", r: "itte mairimasu", bn: "এতক্ষণ। (আমি যাচ্ছি এবং ফিরে আসবো)", en: "So long. (I'm going and coming back.)"},
+        {j: "それから", k: "それから", r: "sorekara", bn: "এবং, আরও", en: "And, furthermore"},
+        {j: "オーストラリア", k: "オーストラリア", r: "oosutoraria", bn: "অস্ট্রেলিয়া", en: "Australia"}
+    ]
+};
+
+// FLASHCARD VARS
+let currentCardList = [];
+let cardIndex = 0;
+let showMean = true;
+
+// QUIZ VARS
+let quizList = [];
+let quizIndex = 0;
+let score = 0;
+
+function switchMode(mode, event) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('study-view').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+
+    if (mode === 'study') {
+        if (event) event.target.classList.add('active');
+        document.getElementById('study-view').classList.remove('hidden');
+        loadCategoryWords();
+    } else {
+        if (event) event.target.classList.add('active');
+        document.getElementById('quiz-setup').classList.remove('hidden');
+    }
+}
+
+function loadCategoryWords() {
+    const cat = document.getElementById('study-cat').value;
+    if (cat === 'all') {
+        currentCardList = [];
+        Object.keys(lesson11Data).forEach(k => currentCardList.push(...lesson11Data[k]));
+    } else {
+        currentCardList = [...lesson11Data[cat]];
+    }
+    cardIndex = 0;
+    renderCard();
+}
+
+function renderCard() {
+    const item = currentCardList[cardIndex];
+    document.getElementById('fc-jp').innerText = item.j;
+    document.getElementById('fc-kanji').innerText = `${item.k} (${item.r})`;
+    const meanElem = document.getElementById('fc-mean');
+    meanElem.innerText = `${item.bn} / ${item.en}`;
+    meanElem.style.visibility = showMean ? 'visible' : 'hidden';
+}
+
+function nextCard() {
+    cardIndex = (cardIndex + 1) % currentCardList.length;
+    renderCard();
+}
+
+function prevCard() {
+    cardIndex = (cardIndex - 1 + currentCardList.length) % currentCardList.length;
+    renderCard();
+}
+
+function toggleMeaning() {
+    showMean = !showMean;
+    renderCard();
+}
+
+// QUIZ LOGIC
+function startQuiz() {
+    const cat = document.getElementById('quiz-cat').value;
+    const limit = document.getElementById('quiz-limit').value;
+
+    let pool = [];
+    if (cat === 'all') {
+        Object.keys(lesson11Data).forEach(k => pool.push(...lesson11Data[k]));
+    } else {
+        pool = [...lesson11Data[cat]];
+    }
+
+    pool.sort(() => Math.random() - 0.5);
+    const count = limit === 'all' ? pool.length : Math.min(parseInt(limit), pool.length);
+    quizList = pool.slice(0, count);
+
+    quizIndex = 0;
+    score = 0;
+
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.remove('hidden');
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    const q = quizList[quizIndex];
+    document.getElementById('quiz-progress').innerText = `Question ${quizIndex + 1} of ${quizList.length}`;
+    document.getElementById('qz-question').innerText = q.j;
+
+    let allPool = [];
+    Object.keys(lesson11Data).forEach(k => allPool.push(...lesson11Data[k]));
+
+    let options = [q];
+    while (options.length < 4) {
+        let rand = allPool[Math.floor(Math.random() * allPool.length)];
+        if (!options.some(opt => opt.j === rand.j)) options.push(rand);
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('qz-options');
+    container.innerHTML = '';
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = `${opt.bn} (${opt.en})`;
+        btn.dataset.correct = (opt.j === q.j);
+        btn.onclick = (e) => handleAnswer(e.target, opt.j === q.j);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(btn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        allBtns.forEach(b => {
+            if (b.dataset.correct === 'true') b.classList.add('correct');
+        });
+    }
+
+    setTimeout(() => {
+        quizIndex++;
+        if (quizIndex < quizList.length) {
+            showQuizQuestion();
+        } else {
+            showQuizResult();
+        }
+    }, 1000);
+}
+
+function showQuizResult() {
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.remove('hidden');
+    document.getElementById('qz-score').innerText = `আপনি ${quizList.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+}
+
+function resetQuiz() {
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.remove('hidden');
+}
+
+// Initial Load
+loadCategoryWords();
+</script>
+</body>
+</html>

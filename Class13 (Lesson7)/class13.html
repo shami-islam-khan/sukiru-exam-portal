@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <title>Japanese Lesson 7 Practice</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #ffffff; width: 100%; max-width: 650px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 25px; }
+        
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: #e2e8f0; color: #4a5568; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: #2b6cb0; color: white; }
+
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 5px; }
+        select { width: 100%; padding: 10px; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; outline: none; background: white; }
+        select:focus { border-color: #2b6cb0; }
+
+        .btn-primary { width: 100%; padding: 12px; background: #2b6cb0; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #2c5282; }
+
+        /* Flashcard Styles */
+        .card-box { background: #edf2f7; border-radius: 12px; padding: 25px; text-align: center; margin-top: 15px; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .jp-text { font-size: 2.2rem; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
+        .kanji-text { font-size: 1.2rem; color: #718096; margin-bottom: 15px; }
+        .mean-text { font-size: 1.1rem; color: #2b6cb0; font-weight: 600; }
+        .nav-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .nav-btn { flex: 1; padding: 10px; background: #4a5568; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* Quiz Styles */
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 10px; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 0.95rem; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: left; transition: 0.2s; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; }
+        .opt-btn.correct { background: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchMode('study', event)">Study (ফ্ল্যাশকার্ড)</button>
+        <button class="tab-btn" onclick="switchMode('quiz', event)">Quiz (কুইজ)</button>
+    </div>
+
+    <!-- FLASHCARD MODE -->
+    <div id="study-view">
+        <div class="form-group">
+            <label for="study-cat">ক্যাটাগরি নির্বাচন করুন:</label>
+            <select id="study-cat" onchange="loadCategoryWords()">
+                <option value="all">সব একসাথে (All Vocabulary)</option>
+                <option value="verbs">ক্রিয়াপদ (Verbs)</option>
+                <option value="tools">যন্ত্রপাতি ও টেবিলওয়্যার (Tools & Cutlery)</option>
+                <option value="office">অফিস ও ইলেকট্রনিক্স (Office & Devices)</option>
+                <option value="objects">দৈনন্দিন জিনিসপত্র (Objects & Items)</option>
+                <option value="family">পরিবার ও সম্পর্ক (Family & People)</option>
+                <option value="adverbs">ক্রিয়াবিশেষণ ও সময় (Adverbs & Time Expressions)</option>
+                <option value="phrases">বাক্য ও কথোপকথন (Phrases & Greeting Expressions)</option>
+            </select>
+        </div>
+
+        <div class="card-box">
+            <div class="jp-text" id="fc-jp">きります</div>
+            <div class="kanji-text" id="fc-kanji">切ります (kirimasu)</div>
+            <div class="mean-text" id="fc-mean">কাটা, টুকরো টুকরো করা / Cut, slice</div>
+        </div>
+
+        <div class="nav-btns">
+            <button class="nav-btn" onclick="prevCard()">আগেরটি</button>
+            <button class="nav-btn" onclick="toggleMeaning()">অর্থ লুকান/দেখুন</button>
+            <button class="nav-btn" onclick="nextCard()">পরেরটি</button>
+        </div>
+    </div>
+
+    <!-- QUIZ SETUP MODE -->
+    <div id="quiz-setup" class="hidden">
+        <h2 style="font-size: 1.3rem; color: #2d3748; margin-bottom: 15px;">Lesson 7 Quiz Setup</h2>
+        <div class="form-group">
+            <label for="quiz-cat">ক্যাটাগরি:</label>
+            <select id="quiz-cat">
+                <option value="all">সব একসাথে (All)</option>
+                <option value="verbs">ক্রিয়াপদ (Verbs)</option>
+                <option value="tools">যন্ত্রপাতি ও টেবিলওয়্যার (Tools & Cutlery)</option>
+                <option value="office">অফিস ও ইলেকট্রনিক্স (Office & Devices)</option>
+                <option value="objects">দৈনন্দিন জিনিসপত্র (Objects & Items)</option>
+                <option value="family">পরিবার ও সম্পর্ক (Family & People)</option>
+                <option value="adverbs">ক্রিয়াবিশেষণ ও সময় (Adverbs & Time Expressions)</option>
+                <option value="phrases">বাক্য ও কথোপকথন (Phrases & Greeting Expressions)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quiz-limit">প্রশ্নের সংখ্যা:</label>
+            <select id="quiz-limit">
+                <option value="10">10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="all">সবগুলো</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="startQuiz()">কুইজ শুরু করুন</button>
+    </div>
+
+    <!-- QUIZ ACTIVE MODE -->
+    <div id="quiz-active" class="hidden">
+        <div class="progress" id="quiz-progress">Question 1 of 10</div>
+        <div class="card-box" style="min-height: 120px;">
+            <div class="jp-text" id="qz-question">きります</div>
+        </div>
+        <div class="options-grid" id="qz-options"></div>
+    </div>
+
+    <!-- QUIZ RESULT MODE -->
+    <div id="quiz-result" class="hidden" style="text-align: center;">
+        <h2 style="color: #2d3748;">কুইজ সম্পন্ন হয়েছে!</h2>
+        <p id="qz-score" style="font-size: 1.2rem; font-weight: bold; color: #2b6cb0; margin: 20px 0;"></p>
+        <button class="btn-primary" onclick="resetQuiz()">আবার চেষ্টা করুন</button>
+    </div>
+</div>
+
+<script>
+const lesson7Data = {
+    verbs: [
+        {j: "きります", k: "切ります", r: "kirimasu", bn: "কাটা, টুকরো টুকরো করা", en: "Cut, slice"},
+        {j: "おくります", k: "送ります", r: "okurimasu", bn: "পাঠানো", en: "Send"},
+        {j: "あげます", k: "あげます", r: "agemasu", bn: "দেওয়া", en: "Give"},
+        {j: "もらいます", k: "も言います", r: "moraimasu", bn: "গ্রহণ করা", en: "Receive"},
+        {j: "かします", k: "貸します", r: "kashimasu", bn: "ধার দেওয়া", en: "Lend"},
+        {j: "かります", k: "借ります", r: "karimasu", bn: "ধার করা, ঋণ করা", en: "Borrow"},
+        {j: "おしえます", k: "教えます", r: "oshiemasu", bn: "শিক্ষা দেওয়া", en: "Teach"},
+        {j: "ならいます", k: "習います", r: "naraimasu", bn: "শেখা", en: "Learn"},
+        {j: "かけます [でんわを～]", k: "かけます [電話を～]", r: "kakemasu [denwa o ~]", bn: "তৈরি করা, কল করা [টেলিফোন করা]", en: "Make [a telephone call]"},
+        {j: "いただきます", k: "いただきます", r: "itadakimasu", bn: "ধন্যবাদ, গ্রহণ করছি (খাবার বা পান করার শুরুতে বলতে হয়)", en: "Thank you / I accept (said before starting to eat or drink)"}
+    ],
+    tools: [
+        {j: "て", k: "手", r: "te", bn: "হাত, বাহু", en: "Hand, arm"},
+        {j: "はし", k: "はし", r: "hashi", bn: "কাঠি (চপস্টিকস)", en: "Chopsticks"},
+        {j: "スプーン", k: "スプーン", r: "supu-n", bn: "চামচ", en: "Spoon"},
+        {j: "ナイフ", k: "ナイフ", r: "naifu", bn: " ছুরি", en: "Knife"},
+        {j: "フォーク", k: "フォーク", r: "fo-ku", bn: "কাঁটা চামচ", en: "Fork"},
+        {j: "はさみ", k: "はさみ", r: "hasami", bn: "কাঁচি, কাঁচি", en: "Scissors"}
+    ],
+    office: [
+        {j: "ファクス", k: "ファクス", r: "fakusu", bn: "ফ্যাক্স", en: "Fax"},
+        {j: "ワープロ", k: "ワープロ", r: "wa-puro", bn: "ওয়ার্ড প্রসেসর", en: "Word processor"},
+        {j: "パソコン", k: "パソコン", r: "pasokon", bn: "ব্যক্তিগত কম্পিউটার", en: "Personal computer"},
+        {j: "パンチ", k: "パンチ", r: "panchi", bn: "পাঞ্চ মেশিন", en: "Punch"},
+        {j: "ホッチキス", k: "ホッチキス", r: "hotchikisu", bn: "স্টেপলার", en: "Stapler"},
+        {j: "セロテープ", k: "セロテープ", r: "serote-pu", bn: "স্কচটেপ", en: "Scotch tape, clear adhesive tape"},
+        {j: "けしゴム", k: "消しゴム", r: "keshigomu", bn: "ইরেজার, মুছে ফেলার রাবার", en: "Eraser"},
+        {j: "かみ", k: "紙", r: "kami", bn: "কাগজ", en: "Paper"}
+    ],
+    objects: [
+        {j: "はな", k: "花", r: "hana", bn: "ফুল", en: "Flower, blossom"},
+        {j: "シャツ", k: "シャツ", r: "shatsu", bn: "শার্ট", en: "Shirt"},
+        {j: "プレゼント", k: "プレゼント", r: "purezento", bn: "উপহার", en: "Present, gift"},
+        {j: "にもつ", k: "荷物", r: "nimotsu", bn: "ল্যাগেজ, মালপত্র", en: "Baggage, parcel"},
+        {j: "おかね", k: "お金", r: "okane", bn: "টাকা", en: "Money"},
+        {j: "きっぷ", k: "切符", r: "kippu", bn: "টিকেট", en: "Ticket"},
+        {j: "クリスマス", k: "クリスマス", r: "kurisumasu", bn: "বড়দিন, ক্রিসমাস", en: "Christmas"}
+    ],
+    family: [
+        {j: "ちち", k: "父", r: "chichi", bn: "নিজের বাবা", en: "My father"},
+        {j: "はは", k: "母", r: "haha", bn: "নিজের মা", en: "My mother"},
+        {j: "おとうさん", k: "お父さん", r: "otousan", bn: "অন্যের বাবা", en: "Someone else's father"},
+        {j: "おかあさん", k: "お母さん", r: "okaasan", bn: "অন্যের মা", en: "Someone else's mother"}
+    ],
+    adverbs: [
+        {j: "もう", k: "もう", r: "mou", bn: "ইতিমধ্যে", en: "Already"},
+        {j: "まだ", k: "まだ", r: "mada", bn: "এখনও না", en: "Not yet"},
+        {j: "これから", k: "これから", r: "korekara", bn: "এখন থেকে, শীঘ্রই", en: "From now on, soon"}
+    ],
+    phrases: [
+        {j: "すてきですね", k: "すてきですね", r: "suteki desu ne", bn: "কি সুন্দর!", en: "What a nice [...]"},
+        {j: "ごめんください", k: "ごめんください", r: "gomen kudasai", bn: "মাফ করবেন / বাড়িতে কেউ আছেন? আমি কি ভেতরে আসতে পারি?", en: "Excuse me / Anybody home? / May I come in?"},
+        {j: "いらっしゃい", k: "いらっしゃい", r: "irasshai", bn: "কি সুন্দর আপনি এসেছেন (স্বাগতম)", en: "How nice of you come. (welcome)"},
+        {j: "どうぞ おあがり ください", k: "どうぞ お上がり ください", r: "douzo oagari kudasai", bn: "ভেতরে আসুন", en: "Do come in."},
+        {j: "しつれいします", k: "失礼します", r: "shitsureishimasu", bn: "আপনাকে ধন্যবাদ, আমি কি... ? (ভয় করে আপনাকে বিরক্ত করবো)", en: "Thank you / May I? (I'm afraid I'll be disturbing you)"},
+        {j: "いかがですか", k: "いかがですか", r: "ikaga desu ka", bn: "আপনার কি আরও লাগবে / নেবেন কি?", en: "Would you like to have [...]? (when offering something)"},
+        {j: "いっしょにいかがですか", k: "いっしょにいかがですか", r: "isshoni ikaga desu ka", bn: "তোমার তো নেই / আপনাকে কি আরও দেবো?", en: "Won't you join me (us)?"},
+        {j: "もう いっぱい いかがですか", k: "もう一杯 いかがですか", r: "mou ippai ikaga desu ka", bn: "আরও এক কাপ নেবো কি?", en: "Won't you have another cup of [...]?"},
+        {j: "りょこう", k: "旅行", r: "ryokou", bn: "ভ্রমণ", en: "Trip, tour"},
+        {j: "おみやげ", k: "お土産", r: "omiyage", bn: "স্মারকচিহ্ন, উপহার", en: "Souvenir, present"},
+        {j: "ヨーロッパ", k: "ヨーロッパ", r: "yo-roppa", bn: "ইউরোপ", en: "Europe"},
+        {j: "スペイン", k: "スペイン", r: "supein", bn: "স্পেন", en: "Spain"}
+    ]
+};
+
+// FLASHCARD VARS
+let currentCardList = [];
+let cardIndex = 0;
+let showMean = true;
+
+// QUIZ VARS
+let quizList = [];
+let quizIndex = 0;
+let score = 0;
+
+function switchMode(mode, event) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('study-view').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+
+    if (mode === 'study') {
+        if (event) event.target.classList.add('active');
+        document.getElementById('study-view').classList.remove('hidden');
+        loadCategoryWords();
+    } else {
+        if (event) event.target.classList.add('active');
+        document.getElementById('quiz-setup').classList.remove('hidden');
+    }
+}
+
+function loadCategoryWords() {
+    const cat = document.getElementById('study-cat').value;
+    if (cat === 'all') {
+        currentCardList = [];
+        Object.keys(lesson7Data).forEach(k => currentCardList.push(...lesson7Data[k]));
+    } else {
+        currentCardList = [...lesson7Data[cat]];
+    }
+    cardIndex = 0;
+    renderCard();
+}
+
+function renderCard() {
+    const item = currentCardList[cardIndex];
+    document.getElementById('fc-jp').innerText = item.j;
+    document.getElementById('fc-kanji').innerText = `${item.k} (${item.r})`;
+    const meanElem = document.getElementById('fc-mean');
+    meanElem.innerText = `${item.bn} / ${item.en}`;
+    meanElem.style.visibility = showMean ? 'visible' : 'hidden';
+}
+
+function nextCard() {
+    cardIndex = (cardIndex + 1) % currentCardList.length;
+    renderCard();
+}
+
+function prevCard() {
+    cardIndex = (cardIndex - 1 + currentCardList.length) % currentCardList.length;
+    renderCard();
+}
+
+function toggleMeaning() {
+    showMean = !showMean;
+    renderCard();
+}
+
+// QUIZ LOGIC
+function startQuiz() {
+    const cat = document.getElementById('quiz-cat').value;
+    const limit = document.getElementById('quiz-limit').value;
+
+    let pool = [];
+    if (cat === 'all') {
+        Object.keys(lesson7Data).forEach(k => pool.push(...lesson7Data[k]));
+    } else {
+        pool = [...lesson7Data[cat]];
+    }
+
+    pool.sort(() => Math.random() - 0.5);
+    const count = limit === 'all' ? pool.length : Math.min(parseInt(limit), pool.length);
+    quizList = pool.slice(0, count);
+
+    quizIndex = 0;
+    score = 0;
+
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.remove('hidden');
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    const q = quizList[quizIndex];
+    document.getElementById('quiz-progress').innerText = `Question ${quizIndex + 1} of ${quizList.length}`;
+    document.getElementById('qz-question').innerText = q.j;
+
+    let allPool = [];
+    Object.keys(lesson7Data).forEach(k => allPool.push(...lesson7Data[k]));
+
+    let options = [q];
+    while (options.length < 4) {
+        let rand = allPool[Math.floor(Math.random() * allPool.length)];
+        if (!options.some(opt => opt.j === rand.j)) options.push(rand);
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('qz-options');
+    container.innerHTML = '';
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = `${opt.bn} (${opt.en})`;
+        btn.dataset.correct = (opt.j === q.j);
+        btn.onclick = (e) => handleAnswer(e.target, opt.j === q.j);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(btn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        allBtns.forEach(b => {
+            if (b.dataset.correct === 'true') b.classList.add('correct');
+        });
+    }
+
+    setTimeout(() => {
+        quizIndex++;
+        if (quizIndex < quizList.length) {
+            showQuizQuestion();
+        } else {
+            showQuizResult();
+        }
+    }, 1000);
+}
+
+function showQuizResult() {
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.remove('hidden');
+    document.getElementById('qz-score').innerText = `আপনি ${quizList.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+}
+
+function resetQuiz() {
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.remove('hidden');
+}
+
+// Initial Load
+loadCategoryWords();
+</script>
+</body>
+</html>

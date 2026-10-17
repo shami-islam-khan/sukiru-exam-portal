@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <title>Japanese Lesson 4 Practice</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #ffffff; width: 100%; max-width: 650px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 25px; }
+        
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: #e2e8f0; color: #4a5568; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: #2b6cb0; color: white; }
+
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 5px; }
+        select { width: 100%; padding: 10px; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; outline: none; background: white; }
+        select:focus { border-color: #2b6cb0; }
+
+        .btn-primary { width: 100%; padding: 12px; background: #2b6cb0; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #2c5282; }
+
+        /* Flashcard Styles */
+        .card-box { background: #edf2f7; border-radius: 12px; padding: 25px; text-align: center; margin-top: 15px; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .jp-text { font-size: 2.2rem; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
+        .kanji-text { font-size: 1.2rem; color: #718096; margin-bottom: 15px; }
+        .mean-text { font-size: 1.1rem; color: #2b6cb0; font-weight: 600; }
+        .nav-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .nav-btn { flex: 1; padding: 10px; background: #4a5568; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* Quiz Styles */
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 10px; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 0.95rem; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: left; transition: 0.2s; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; }
+        .opt-btn.correct { background: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchMode('study')">Study (ফ্ল্যাশকার্ড)</button>
+        <button class="tab-btn" onclick="switchMode('quiz')">Quiz (কুইজ)</button>
+    </div>
+
+    <!-- FLASHCARD MODE -->
+    <div id="study-view">
+        <div class="form-group">
+            <label for="study-cat">ক্যাটাগরি নির্বাচন করুন:</label>
+            <select id="study-cat" onchange="loadCategoryWords()">
+                <option value="all">সব একসাথে (All Vocabulary)</option>
+                <option value="verbs">ক্রিয়াপদ (Verbs)</option>
+                <option value="places">স্থান ও প্রতিষ্ঠান (Places/Facilities)</option>
+                <option value="time">সময়, দিন ও বার (Time/Days)</option>
+                <option value="phrases">বাক্য ও অভিবাদন (Phrases & Expressions)</option>
+                <option value="cities">শহরের নাম (City Names)</option>
+            </select>
+        </div>
+
+        <div class="card-box">
+            <div class="jp-text" id="fc-jp">おきます</div>
+            <div class="kanji-text" id="fc-kanji">起きれます (okimasu)</div>
+            <div class="mean-text" id="fc-mean">ঘুম থেকে ওঠা, জেগে ওঠা / Get up, wake up</div>
+        </div>
+
+        <div class="nav-btns">
+            <button class="nav-btn" onclick="prevCard()">আগেরটি</button>
+            <button class="nav-btn" onclick="toggleMeaning()">অর্থ লুকান/দেখুন</button>
+            <button class="nav-btn" onclick="nextCard()">পরেরটি</button>
+        </div>
+    </div>
+
+    <!-- QUIZ SETUP MODE -->
+    <div id="quiz-setup" class="hidden">
+        <h2 style="font-size: 1.3rem; color: #2d3748; margin-bottom: 15px;">Lesson 4 Quiz Setup</h2>
+        <div class="form-group">
+            <label for="quiz-cat">ক্যাটাগরি:</label>
+            <select id="quiz-cat">
+                <option value="all">সব একসাথে (All)</option>
+                <option value="verbs">ক্রিয়াপদ (Verbs)</option>
+                <option value="places">স্থান ও প্রতিষ্ঠান (Places)</option>
+                <option value="time">সময়, দিন ও বার (Time/Days)</option>
+                <option value="phrases">বাক্য ও অভিবাদন (Phrases)</option>
+                <option value="cities">শহরের নাম (Cities)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quiz-limit">প্রশ্নের সংখ্যা:</label>
+            <select id="quiz-limit">
+                <option value="10">10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="all">সবগুলো</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="startQuiz()">কুইজ শুরু করুন</button>
+    </div>
+
+    <!-- QUIZ ACTIVE MODE -->
+    <div id="quiz-active" class="hidden">
+        <div class="progress" id="quiz-progress">Question 1 of 10</div>
+        <div class="card-box" style="min-height: 120px;">
+            <div class="jp-text" id="qz-question">おきます</div>
+        </div>
+        <div class="options-grid" id="qz-options"></div>
+    </div>
+
+    <!-- QUIZ RESULT MODE -->
+    <div id="quiz-result" class="hidden" style="text-align: center;">
+        <h2 style="color: #2d3748;">কুইজ সম্পন্ন হয়েছে!</h2>
+        <p id="qz-score" style="font-size: 1.2rem; font-weight: bold; color: #2b6cb0; margin: 20px 0;"></p>
+        <button class="btn-primary" onclick="resetQuiz()">আবার চেষ্টা করুন</button>
+    </div>
+</div>
+
+<script>
+const lesson4Data = {
+    verbs: [
+        {j: "おきます", k: "起きます", r: "okimasu", bn: "ঘুম থেকে ওঠা, জেগে ওঠা", en: "Get up, wake up"},
+        {j: "ねます", k: "寝ます", r: "nemasu", bn: "ঘুমানো", en: "Sleep, go to bed"},
+        {j: "はたらきます", k: "働きます", r: "hatarakimasu", bn: "কাজ করা", en: "Work"},
+        {j: "やすみます", k: "休みます", r: "yasumimasu", bn: "বিশ্রাম নেওয়া, অবসর নেওয়া", en: "Take a rest, take a holiday"},
+        {j: "べんきょうします", k: "勉強します", r: "benkyoushimasu", bn: "পড়াশোনা করা", en: "Study"},
+        {j: "おわります", k: "終わります", r: "owarimasu", bn: "শেষ করা", en: "Finish"}
+    ],
+    places: [
+        {j: "デパート", k: "デパート", r: "depa-to", bn: "ডিপার্টমেন্ট স্টোর", en: "Department store"},
+        {j: "ぎんこう", k: "銀行", r: "ginkou", bn: "ব্যাংক", en: "Bank"},
+        {j: "ゆうびんきょく", k: "郵便局", r: "yuubinkyoku", bn: "ডাকঘর", en: "Post office"},
+        {j: "としょかん", k: "図書館", r: "toshokan", bn: "গ্রন্থাগার / লাইব্রেরি", en: "Library"},
+        {j: "びじゅつかん", k: "美術館", r: "bijutsukan", bn: "শিল্প জাদুঘর", en: "Art museum"}
+    ],
+    time: [
+        {j: "いま", k: "今", r: "ima", bn: "এখন", en: "Now"},
+        {j: "～じ", k: "～時", r: "-ji", bn: "ঘণ্টা / ~টা", en: "-o'clock"},
+        {j: "～ふん (～ぷん)", k: "～分", r: "-fun (-pun)", bn: "মিনিট", en: "-minute"},
+        {j: "はん", k: "半", r: "han", bn: "অর্ধেক / সাড়ে", en: "Half"},
+        {j: "なんじ", k: "何時", r: "nanji", bn: "কয়টা / সময় কত", en: "What time"},
+        {j: "なんぷん", k: "何分", r: "nanpun", bn: "কত মিনিট", en: "What minute"},
+        {j: "ごぜん", k: "午前", r: "gozen", bn: "পূর্বাহ্ন (এ.এম.) / সকাল", en: "A.M., morning"},
+        {j: "ごご", k: "午後", r: "gogo", bn: "অপরাহ্ন (পি.এম.) / বিকেল", en: "P.M., afternoon"},
+        {j: "あさ", k: "朝", r: "asa", bn: "সকাল", en: "Morning"},
+        {j: "ひる", k: "昼", r: "hiru", bn: "দুপুর", en: "Daytime, noon"},
+        {j: "ばん (よる)", k: "晩 (夜)", r: "ban (yoru)", bn: "রাত, সন্ধ্যা", en: "Night, evening"},
+        {j: "おととい", k: "一昨日", r: "ototoi", bn: "গতকালের আগের দিন", en: "The day before yesterday"},
+        {j: "きのう", k: "昨日", r: "kinou", bn: "গতকাল", en: "Yesterday"},
+        {j: "きょう", k: "今日", r: "kyou", bn: "আজ", en: "Today"},
+        {j: "あした", k: "明日", r: "ashita", bn: "আগামীকাল", en: "Tomorrow"},
+        {j: "あさって", k: "明後日", r: "asatte", bn: "আগামীকালের পরের দিন", en: "The day after tomorrow"},
+        {j: "けさ", k: "今朝", r: "kesa", bn: "আজ সকাল", en: "This morning"},
+        {j: "こんばん", k: "今晩", r: "konban", bn: "আজ রাত", en: "This evening, tonight"},
+        {j: "やすみ", k: "休み", r: "yasumi", bn: "বিশ্রাম, ছুটি", en: "Rest, a holiday, a day off"},
+        {j: "ひるやすみ", k: "昼休み", r: "hiruyasumi", bn: "দুপুরের খাবারের সময় / বিরতি", en: "Lunchtime"},
+        {j: "まいあさ", k: "毎朝", r: "maiasa", bn: "প্রতিসকাল", en: "Every morning"},
+        {j: "まいばん", k: "毎晩", r: "maiban", bn: "প্রতিরাত", en: "Every night"},
+        {j: "まいにち", k: "毎日", r: "mainichi", bn: "প্রতিদিন", en: "Every day"},
+        {j: "げつようび", k: "月曜日", r: "getsuyoubi", bn: "সোমবার", en: "Monday"},
+        {j: "かようび", k: "火曜日", r: "kayoubi", bn: "মঙ্গলবার", en: "Tuesday"},
+        {j: "すいようび", k: "水曜日", r: "suiyoubi", bn: "বুধবার", en: "Wednesday"},
+        {j: "もくようび", k: "木曜日", r: "mokuyoubi", bn: "বৃহস্পতিবার", en: "Thursday"},
+        {j: "きんようび", k: "金曜日", r: "kinyoubi", bn: "শুক্রবার", en: "Friday"},
+        {j: "どようび", k: "土曜日", r: "doyoubi", bn: "শনিবার", en: "Saturday"},
+        {j: "にちようび", k: "日曜日", r: "nichiyoubi", bn: "রবিবার", en: "Sunday"},
+        {j: "なんようび", k: "何曜日", r: "nanyoubi", bn: "সপ্তাহের কোন দিন / কি বার", en: "What day of the week"}
+    ],
+    phrases: [
+        {j: "ばんごう", k: "番号", r: "bangou", bn: "সংখ্যা / নম্বর", en: "Number"},
+        {j: "なんばん", k: "何番", r: "nanban", bn: "কোন সংখ্যা / কত নম্বর", en: "What number"},
+        {j: "～から", k: "～から", r: "-kara", bn: "থেকে / হতে", en: "From ~"},
+        {j: "～まで", k: "～まで", r: "-made", bn: "পর্যন্ত", en: "Up to ~, until ~"},
+        {j: "～と～", k: "～と～", r: "-to-", bn: "এবং (দুইটি noun যোগ করতে)", en: "And (used to connect nouns)"},
+        {j: "そちら", k: "そちら", r: "sochira", bn: "তোমার জায়গা / আপনাদের স্থান", en: "Your place"},
+        {j: "たいへんですね", k: "大変ですね", r: "taihen desu ne", bn: "এটা কঠিন, তাই না? (সহানুভূতি প্রকাশে)", en: "That's tough, isn't it?"},
+        {j: "えーと", k: "えーと", r: "e-to", bn: "ভালো, আমাকে দেখতে দাও / উম্ম...", en: "Well, let me see"},
+        {j: "104", k: "104", r: "hyaku-yon-ban", bn: "তথ্য নির্দেশনা নাম্বার (ইনফরমেশন ডিরেক্টরি)", en: "Information, directory assistance"},
+        {j: "おねがいします", k: "お願いします", r: "onegai shimasu", bn: "দয়া করুন (অনুরোধ অর্থে)", en: "Please (ask for a favor)"},
+        {j: "かしこまりました", k: "かしこまりました", r: "kashikomarimashita", bn: "নিশ্চয়ই (স্যার/ম্যাডাম)", en: "Certainly (sir, madam)"},
+        {j: "お問い合わせの番号", k: "お問い合わせの番号", r: "otoiawase no bangou", bn: "নাম্বার সম্পর্কে তদন্ত করা", en: "The number being inquired about"},
+        {j: "どうもありがとうございました", k: "どうもありがとうございました", r: "doumo arigatou gozaimashita", bn: "আপনাকে অসংখ্য ধন্যবাদ", en: "Thank you very much"}
+    ],
+    cities: [
+        {j: "ニューヨーク", k: "ニューヨーク", r: "nyu-yo-ku", bn: "নিউইয়র্ক", en: "New York"},
+        {j: "ペキン", k: "北京", r: "pekin", bn: "বেইজিং", en: "Beijing"},
+        {j: "ロンドン", k: "ロンドン", r: "rondon", bn: "লন্ডন", en: "London"},
+        {j: "バンコク", k: "バンコク", r: "bankoku", bn: "ব্যাংকক", en: "Bangkok"},
+        {j: "ロサンゼルス", k: "ロサンゼルス", r: "rosanjerusu", bn: "লস অ্যাঞ্জেলেস", en: "Los Angeles"}
+    ]
+};
+
+// FLASHCARD VARS
+let currentCardList = [];
+let cardIndex = 0;
+let showMean = true;
+
+// QUIZ VARS
+let quizList = [];
+let quizIndex = 0;
+let score = 0;
+
+function switchMode(mode) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('study-view').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+
+    if (mode === 'study') {
+        event.target.classList.add('active');
+        document.getElementById('study-view').classList.remove('hidden');
+        loadCategoryWords();
+    } else {
+        event.target.classList.add('active');
+        document.getElementById('quiz-setup').classList.remove('hidden');
+    }
+}
+
+function loadCategoryWords() {
+    const cat = document.getElementById('study-cat').value;
+    if (cat === 'all') {
+        currentCardList = [];
+        Object.keys(lesson4Data).forEach(k => currentCardList.push(...lesson4Data[k]));
+    } else {
+        currentCardList = [...lesson4Data[cat]];
+    }
+    cardIndex = 0;
+    renderCard();
+}
+
+function renderCard() {
+    const item = currentCardList[cardIndex];
+    document.getElementById('fc-jp').innerText = item.j;
+    document.getElementById('fc-kanji').innerText = `${item.k} (${item.r})`;
+    const meanElem = document.getElementById('fc-mean');
+    meanElem.innerText = `${item.bn} / ${item.en}`;
+    meanElem.style.visibility = showMean ? 'visible' : 'hidden';
+}
+
+function nextCard() {
+    cardIndex = (cardIndex + 1) % currentCardList.length;
+    renderCard();
+}
+
+function prevCard() {
+    cardIndex = (cardIndex - 1 + currentCardList.length) % currentCardList.length;
+    renderCard();
+}
+
+function toggleMeaning() {
+    showMean = !showMean;
+    renderCard();
+}
+
+// QUIZ LOGIC
+function startQuiz() {
+    const cat = document.getElementById('quiz-cat').value;
+    const limit = document.getElementById('quiz-limit').value;
+
+    let pool = [];
+    if (cat === 'all') {
+        Object.keys(lesson4Data).forEach(k => pool.push(...lesson4Data[k]));
+    } else {
+        pool = [...lesson4Data[cat]];
+    }
+
+    pool.sort(() => Math.random() - 0.5);
+    const count = limit === 'all' ? pool.length : Math.min(parseInt(limit), pool.length);
+    quizList = pool.slice(0, count);
+
+    quizIndex = 0;
+    score = 0;
+
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.remove('hidden');
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    const q = quizList[quizIndex];
+    document.getElementById('quiz-progress').innerText = `Question ${quizIndex + 1} of ${quizList.length}`;
+    document.getElementById('qz-question').innerText = q.j;
+
+    let allPool = [];
+    Object.keys(lesson4Data).forEach(k => allPool.push(...lesson4Data[k]));
+
+    let options = [q];
+    while (options.length < 4) {
+        let rand = allPool[Math.floor(Math.random() * allPool.length)];
+        if (!options.some(opt => opt.j === rand.j)) options.push(rand);
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('qz-options');
+    container.innerHTML = '';
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = `${opt.bn} (${opt.en})`;
+        btn.dataset.correct = (opt.j === q.j);
+        btn.onclick = (e) => handleAnswer(e.target, opt.j === q.j);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(btn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        allBtns.forEach(b => {
+            if (b.dataset.correct === 'true') b.classList.add('correct');
+        });
+    }
+
+    setTimeout(() => {
+        quizIndex++;
+        if (quizIndex < quizList.length) {
+            showQuizQuestion();
+        } else {
+            showQuizResult();
+        }
+    }, 1000);
+}
+
+function showQuizResult() {
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.remove('hidden');
+    document.getElementById('qz-score').innerText = `আপনি ${quizList.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+}
+
+function resetQuiz() {
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.remove('hidden');
+}
+
+// Initial Load
+loadCategoryWords();
+</script>
+</body>
+</html>

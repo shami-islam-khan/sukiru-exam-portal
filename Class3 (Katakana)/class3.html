@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <title>Katakana Practice Quiz</title>
+    
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 480px; text-align: center; }
+        h1 { color: #1a202c; font-size: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; text-align: left; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 0.5rem; }
+        select { width: 100%; padding: 0.8rem; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; background: white; outline: none; }
+        select:focus { border-color: #3182ce; }
+        button.start-btn { width: 100%; padding: 0.9rem; background: #3182ce; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 1rem; }
+        button.start-btn:hover { background: #2b6cb0; }
+        
+        .hidden { display: none; }
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 0.5rem; }
+        .char-display { font-size: 5.5rem; margin: 0.5rem 0; color: #2d3748; font-weight: bold; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1.5rem; }
+        
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 1.1rem; padding: 0.9rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; border-color: #cbd5e0; }
+        .opt-btn:disabled { cursor: not-allowed; }
+        
+        .opt-btn.correct { background-color: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background-color: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- SETUP SCREEN -->
+    <div id="setup-screen">
+        <h1 id="ui-title">Katakana Practice Quiz (কাতাকানা কুইজ)</h1>
+        
+        <div class="form-group">
+            <label for="lang">Language / ভাষা:</label>
+            <select id="lang" onchange="updateLanguageUI()">
+                <option value="both">Both (English + বাংলা)</option>
+                <option value="bn">বাংলা (Bangla)</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lbl-category" for="category">Select Character Set / ক্যাটাগরি:</label>
+            <select id="category">
+                <option value="basic" id="opt-basic">Basic Katakana (ア, イ, ウ...)</option>
+                <option value="tenten" id="opt-tenten">Ten-ten / Dakuten (ガ, ザ, ダ...)</option>
+                <option value="maru" id="opt-maru">Maru / Handakuten (パ, ピ, プ...)</option>
+                <option value="yoon" id="opt-yoon">Combinations / Yōon (キャ, シュ, チョ...)</option>
+                <option value="all_katakana" id="opt-all">All Katakana Combined (সব একসাথে)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lbl-limit" for="limit">Select Limit / প্রশ্নের সংখ্যা:</label>
+            <select id="limit">
+                <option value="10">10 Questions</option>
+                <option value="30">30 Questions</option>
+                <option value="50">50 Questions</option>
+                <option value="all">All Available</option>
+            </select>
+        </div>
+
+        <button class="start-btn" id="btn-start" onclick="startQuiz()">Start Practice / শুরু করুন</button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="hidden">
+        <div class="progress" id="progress-text">Question 1 of 10</div>
+        <div class="char-display" id="kana-display">ア</div>
+        <div class="options-grid" id="options-container"></div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden">
+        <h1 id="res-title">Quiz Complete!</h1>
+        <p id="score-text" style="font-size: 1.2rem; margin: 1.5rem 0; color: #2d3748; font-weight: 600;"></p>
+        <button class="start-btn" id="btn-restart" onclick="resetQuiz()">Practice Again</button>
+    </div>
+</div>
+
+<script>
+const dataSets = {
+    basic: [
+        {k: "ア", r: "a", bn: "আ"}, {k: "イ", r: "i", bn: "ই"}, {k: "ウ", r: "u", bn: "উ"}, {k: "エ", r: "e", bn: "এ"}, {k: "オ", r: "o", bn: "ও"},
+        {k: "カ", r: "ka", bn: "কা"}, {k: "キ", r: "ki", bn: "কি"}, {k: "ク", r: "ku", bn: "কু"}, {k: "ケ", r: "ke", bn: "কে"}, {k: "コ", r: "ko", bn: "কো"},
+        {k: "サ", r: "sa", bn: "সা"}, {k: "シ", r: "shi", bn: "শি"}, {k: "ス", r: "su", bn: "সু"}, {k: "セ", r: "se", bn: "সে"}, {k: "ソ", r: "so", bn: "সো"},
+        {k: "タ", r: "ta", bn: "তা"}, {k: "チ", r: "chi", bn: "চি"}, {k: "ツ", r: "tsu", bn: "ত্সু"}, {k: "テ", r: "te", bn: "তে"}, {k: "ト", r: "to", bn: "তো"},
+        {k: "ナ", r: "na", bn: "না"}, {k: "ニ", r: "ni", bn: "নি"}, {k: "ヌ", r: "nu", bn: "নু"}, {k: "ネ", r: "ne", bn: "নে"}, {k: "ノ", r: "no", bn: "নো"},
+        {k: "ハ", r: "ha", bn: "হা"}, {k: "ヒ", r: "hi", bn: "হি"}, {k: "フ", r: "fu", bn: "ফু"}, {k: "ヘ", r: "he", bn: "হে"}, {k: "ホ", r: "ho", bn: "হো"},
+        {k: "マ", r: "ma", bn: "মা"}, {k: "ミ", r: "mi", bn: "মি"}, {k: "ム", r: "mu", bn: "মু"}, {k: "メ", r: "me", bn: "মে"}, {k: "モ", r: "mo", bn: "মো"},
+        {k: "ヤ", r: "ya", bn: "ইয়া"}, {k: "ユ", r: "yu", bn: "ইউ"}, {k: "ヨ", r: "yo", bn: "ইয়ো"},
+        {k: "ラ", r: "ra", bn: "রা"}, {k: "リ", r: "ri", bn: "রি"}, {k: "ル", r: "ru", bn: "রু"}, {k: "レ", r: "re", bn: "রে"}, {k: "ロ", r: "ro", bn: "রো"},
+        {k: "ワ", r: "wa", bn: "ওয়া"}, {k: "ヲ", r: "o", bn: "ও (o)"}, {k: "ン", r: "n", bn: "ন্"}
+    ],
+    tenten: [
+        {k: "ガ", r: "ga", bn: "গা"}, {k: "ギ", r: "gi", bn: "গি"}, {k: "グ", r: "gu", bn: "গু"}, {k: "ゲ", r: "ge", bn: "গে"}, {k: "ゴ", r: "go", bn: "গো"},
+        {k: "ザ", r: "za", bn: "জা (za)"}, {k: "ジ", r: "ji", bn: "জি"}, {k: "ズ", r: "zu", bn: "জু (zu)"}, {k: "ゼ", r: "ze", bn: "জে (ze)"}, {k: "ゾ", r: "zo", bn: "জো (zo)"},
+        {k: "ダ", r: "da", bn: "দা"}, {k: "ヂ", r: "ji", bn: "জি (dji)"}, {k: "ヅ", r: "zu", bn: "জু (dzu)"}, {k: "デ", r: "de", bn: "দে"}, {k: "ド", r: "do", bn: "দো"},
+        {k: "バ", r: "ba", bn: "বা"}, {k: "ビ", r: "bi", bn: "বি"}, {k: "ブ", r: "bu", bn: "বু"}, {k: "ベ", r: "be", bn: "বে"}, {k: "ボ", r: "bo", bn: "বো"}
+    ],
+    maru: [
+        {k: "パ", r: "pa", bn: "পা"}, {k: "ピ", r: "pi", bn: "পি"}, {k: "プ", r: "pu", bn: "পু"}, {k: "ペ", r: "pe", bn: "পে"}, {k: "ポ", r: "po", bn: "পো"}
+    ],
+    yoon: [
+        {k: "キャ", r: "kya", bn: "ক্যা"}, {k: "キュ", r: "kyu", bn: "কিউ"}, {k: "キョ", r: "kyo", bn: "কিয়ো"},
+        {k: "シャ", r: "sha", bn: "শা"}, {k: "シュ", r: "shu", bn: "শু"}, {k: "ショ", r: "sho", bn: "শো"},
+        {k: "チャ", r: "cha", bn: "চা"}, {k: "チュ", r: "chu", bn: "চু"}, {k: "チョ", r: "cho", bn: "চো"},
+        {k: "ニャ", r: "nya", bn: "নিয়া"}, {k: "ニュ", r: "nyu", bn: "নিউ"}, {k: "ニョ", r: "nyo", bn: "নিও"},
+        {k: "ヒャ", r: "hya", bn: "হিয়া"}, {k: "ヒュ", r: "hyu", bn: "হিউ"}, {k: "ヒョ", r: "hyo", bn: "হিও"},
+        {k: "ミャ", r: "mya", bn: "মিয়া"}, {k: "ミュ", r: "myu", bn: "মিউ"}, {k: "ミョ", r: "myo", bn: "মিও"},
+        {k: "リャ", r: "rya", bn: "রিয়া"}, {k: "リュ", r: "ryu", bn: "রিউ"}, {k: "リョ", r: "ryo", bn: "রিও"},
+        {k: "ギャ", r: "gya", bn: "গ্যা"}, {k: "ギュ", r: "gyu", bn: "গিউ"}, {k: "ギョ", r: "gyo", bn: "গিও"},
+        {k: "ジャ", r: "ja", bn: "জা"}, {k: "ジュ", r: "ju", bn: "জু"}, {k: "ジョ", r: "jo", bn: "জো"},
+        {k: "ビャ", r: "bya", bn: "ব্যা"}, {k: "ビュ", r: "byu", bn: "বিউ"}, {k: "ビョ", r: "byo", bn: "বিও"},
+        {k: "ピャ", r: "pya", bn: "প্যা"}, {k: "ピュ", r: "pyu", bn: "পিউ"}, {k: "ピョ", r: "pyo", bn: "পিও"}
+    ]
+};
+
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let selectedLang = 'both';
+
+function updateLanguageUI() {
+    selectedLang = document.getElementById('lang').value;
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('ui-title').innerText = "কাতাকানা প্র্যাকটিস কুইজ";
+        document.getElementById('lbl-category').innerText = "বর্ণমালা সিলেক্ট করুন:";
+        document.getElementById('opt-basic').innerText = "বেসিক কাতাকানা (ア, イ, ウ...)";
+        document.getElementById('opt-tenten').innerText = "তেন-তেন / ডাকুতেন (ガ, ザ, ダ...)";
+        document.getElementById('opt-maru').innerText = "মারু / হানডাকুতেন (パ, ピ, プ...)";
+        document.getElementById('opt-yoon').innerText = "যুক্তবর্ণ / ইয়োন (キャ, シュ, チョ...)";
+        document.getElementById('opt-all').innerText = "সব কাতাকানা একসাথে";
+        document.getElementById('lbl-limit').innerText = "প্রশ্নের সংখ্যা নির্ধারণ করুন:";
+        document.getElementById('btn-start').innerText = "প্র্যাকটিস শুরু করুন";
+    } else if (selectedLang === 'en') {
+        document.getElementById('ui-title').innerText = "Katakana Practice Quiz";
+        document.getElementById('lbl-category').innerText = "Select Character Set:";
+        document.getElementById('opt-basic').innerText = "Basic Katakana (ア, イ, ウ...)";
+        document.getElementById('opt-tenten').innerText = "Ten-ten / Dakuten (ガ, ザ, ダ...)";
+        document.getElementById('opt-maru').innerText = "Maru / Handakuten (パ, ピ, プ...)";
+        document.getElementById('opt-yoon').innerText = "Combinations / Yōon (キャ, シュ, チョ...)";
+        document.getElementById('opt-all').innerText = "All Katakana Combined";
+        document.getElementById('lbl-limit').innerText = "Select Questions Limit:";
+        document.getElementById('btn-start').innerText = "Start Practice";
+    } else {
+        document.getElementById('ui-title').innerText = "Katakana Practice Quiz (কাতাকানা কুইজ)";
+        document.getElementById('lbl-category').innerText = "Select Character Set / বর্ণমালা সিলেক্ট করুন:";
+        document.getElementById('opt-basic').innerText = "Basic Katakana (ア, イ, ウ...)";
+        document.getElementById('opt-tenten').innerText = "Ten-ten / Dakuten (ガ, ザ, ダ...)";
+        document.getElementById('opt-maru').innerText = "Maru / Handakuten (パ, ピ, プ...)";
+        document.getElementById('opt-yoon').innerText = "Combinations / Yōon (キャ, シュ...)";
+        document.getElementById('opt-all').innerText = "All Katakana Combined (সব একসাথে)";
+        document.getElementById('lbl-limit').innerText = "Select Limit / প্রশ্নের সংখ্যা:";
+        document.getElementById('btn-start').innerText = "Start Practice / শুরু করুন";
+    }
+}
+
+function getFormattedOption(item) {
+    if (selectedLang === 'bn') return item.bn;
+    if (selectedLang === 'en') return item.r;
+    return `${item.r} (${item.bn})`;
+}
+
+function startQuiz() {
+    const category = document.getElementById('category').value;
+    const limitVal = document.getElementById('limit').value;
+
+    let pool = [];
+    if (category === 'all_katakana') {
+        pool = [...dataSets.basic, ...dataSets.tenten, ...dataSets.maru, ...dataSets.yoon];
+    } else {
+        pool = [...dataSets[category]];
+    }
+
+    pool.sort(() => Math.random() - 0.5);
+
+    const limit = limitVal === 'all' ? pool.length : Math.min(parseInt(limitVal), pool.length);
+    currentQuestions = pool.slice(0, limit);
+
+    currentIndex = 0;
+    score = 0;
+
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+
+    showQuestion();
+}
+
+function showQuestion() {
+    const q = currentQuestions[currentIndex];
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('progress-text').innerText = `প্রশ্ন ${currentIndex + 1} / ${currentQuestions.length}`;
+    } else {
+        document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} of ${currentQuestions.length}`;
+    }
+
+    document.getElementById('kana-display').innerText = q.k;
+
+    const allPool = [...dataSets.basic, ...dataSets.tenten, ...dataSets.maru, ...dataSets.yoon];
+    let options = [q];
+
+    while (options.length < 4) {
+        let randItem = allPool[Math.floor(Math.random() * allPool.length)];
+        if (!options.some(opt => opt.r === randItem.r)) {
+            options.push(randItem);
+        }
+    }
+
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = getFormattedOption(opt);
+        btn.dataset.correct = (opt.r === q.r);
+        btn.onclick = (e) => handleAnswer(e.target, opt.r === q.r);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(selectedBtn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    allBtns.forEach(btn => btn.disabled = true);
+
+    if (isCorrect) {
+        selectedBtn.classList.add('correct');
+        score++;
+    } else {
+        selectedBtn.classList.add('wrong');
+        allBtns.forEach(btn => {
+            if (btn.dataset.correct === "true") {
+                btn.classList.add('correct');
+            }
+        });
+    }
+
+    setTimeout(() => {
+        currentIndex++;
+        if (currentIndex < currentQuestions.length) {
+            showQuestion();
+        } else {
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function endQuiz() {
+    document.getElementById('quiz-screen').classList.add('hidden');
+    document.getElementById('result-screen').classList.remove('hidden');
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('res-title').innerText = "কুইজ সম্পন্ন হয়েছে!";
+        document.getElementById('score-text').innerText = `আপনি ${currentQuestions.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+        document.getElementById('btn-restart').innerText = "আবার প্র্যাকটিস করুন";
+    } else {
+        document.getElementById('res-title').innerText = "Quiz Complete!";
+        document.getElementById('score-text').innerText = `You scored ${score} out of ${currentQuestions.length}!`;
+        document.getElementById('btn-restart').innerText = "Practice Again";
+    }
+}
+
+function resetQuiz() {
+    document.getElementById('result-screen').classList.add('hidden');
+    document.getElementById('setup-screen').classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>

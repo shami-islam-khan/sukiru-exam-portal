@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <title>Basic Kanji 320 - All Kanji Study & Quiz</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #ffffff; width: 100%; max-width: 700px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 25px; }
+        
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: #e2e8f0; color: #4a5568; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: #2b6cb0; color: white; }
+
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 5px; }
+        select { width: 100%; padding: 10px; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; outline: none; background: white; }
+        select:focus { border-color: #2b6cb0; }
+
+        .btn-primary { width: 100%; padding: 12px; background: #2b6cb0; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #2c5282; }
+
+        /* Flashcard Styles */
+        .card-box { background: #edf2f7; border-radius: 12px; padding: 25px; text-align: center; margin-top: 15px; min-height: 210px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .kanji-number { font-size: 0.85rem; font-weight: bold; color: #718096; background: #cbd5e0; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+        .jp-text { font-size: 2.2rem; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
+        .kanji-text { font-size: 1.1rem; color: #718096; margin-bottom: 12px; }
+        .mean-text { font-size: 1.1rem; color: #2b6cb0; font-weight: 600; }
+        .nav-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .nav-btn { flex: 1; padding: 10px; background: #4a5568; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* Quiz Styles */
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 10px; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 0.95rem; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: left; transition: 0.2s; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; }
+        .opt-btn.correct { background: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchMode('study', event)">Study (ফ্ল্যাশকার্ড)</button>
+        <button class="tab-btn" onclick="switchMode('quiz', event)">Quiz (কুইজ)</button>
+    </div>
+
+    <!-- FLASHCARD MODE -->
+    <div id="study-view">
+        <div class="card-box">
+            <div class="kanji-number" id="fc-num">Kanji #1</div>
+            <div class="jp-text" id="fc-jp">人</div>
+            <div class="kanji-text" id="fc-kanji">ひと (hito) | ジン、ニン</div>
+            <div class="mean-text" id="fc-mean">মানুষ / Person[cite: 2]</div>
+        </div>
+
+        <div class="nav-btns">
+            <button class="nav-btn" onclick="prevCard()">আগেরটি</button>
+            <button class="nav-btn" onclick="toggleMeaning()">অর্থ লুকান/দেখুন</button>
+            <button class="nav-btn" onclick="nextCard()">পরেরটি</button>
+        </div>
+    </div>
+
+    <!-- QUIZ SETUP MODE -->
+    <div id="quiz-setup" class="hidden">
+        <h2 style="font-size: 1.3rem; color: #2d3748; margin-bottom: 15px;">Kanji Quiz Setup</h2>
+        <div class="form-group">
+            <label for="quiz-limit">প্রশ্নের সংখ্যা:</label>
+            <select id="quiz-limit">
+                <option value="10">10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="50">50 Questions</option>
+                <option value="all">সবগুলো (All)</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="startQuiz()">কুইজ শুরু করুন</button>
+    </div>
+
+    <!-- QUIZ ACTIVE MODE -->
+    <div id="quiz-active" class="hidden">
+        <div class="progress" id="quiz-progress">Question 1 of 10</div>
+        <div class="card-box" style="min-height: 130px;">
+            <div class="kanji-number" id="qz-num">Kanji #1</div>
+            <div class="jp-text" id="qz-question">人</div>
+        </div>
+        <div class="options-grid" id="qz-options"></div>
+    </div>
+
+    <!-- QUIZ RESULT MODE -->
+    <div id="quiz-result" class="hidden" style="text-align: center;">
+        <h2 style="color: #2d3748;">কুইজ সম্পন্ন হয়েছে!</h2>
+        <p id="qz-score" style="font-size: 1.2rem; font-weight: bold; color: #2b6cb0; margin: 20px 0;"></p>
+        <button class="btn-primary" onclick="resetQuiz()">আবার চেষ্টা করুন</button>
+    </div>
+</div>
+
+<script>
+const allKanjiData = [
+    {no: 1, j: "人", k: "ひと / ジン、ニン", r: "hito", bn: "মানুষ", en: "Person[cite: 2]"},
+    {no: 2, j: "日", k: "ひ、か / ニチ、ジツ", r: "hi, ka", bn: "দিন / সূর্য", en: "Day, Sun[cite: 2]"},
+    {no: 3, j: "一", k: "ひと(つ) / イチ、イッ", r: "hitotsu", bn: "এক", en: "One[cite: 2]"},
+    {no: 4, j: "二", k: "ふた(つ) / ニ", r: "futatsu", bn: "দুই", en: "Two[cite: 2]"},
+    {no: 5, j: "三", k: "みっ(つ) / サン", r: "mittsu", bn: "তিন", en: "Three[cite: 2]"},
+    {no: 6, j: "四", k: "よっ(つ)、よん / シ", r: "yottsu", bn: "চার", en: "Four[cite: 2]"},
+    {no: 7, j: "五", k: "いつ(つ) / ゴ", r: "itsutsu", bn: "পাঁচ", en: "Five[cite: 2]"},
+    {no: 8, j: "六", k: "むっ(つ) / ロク", r: "muttsu", bn: "ছয়", en: "Six[cite: 2]"},
+    {no: 9, j: "七", k: "なな(つ) / シチ", r: "nanatsu", bn: "সাত", en: "Seven[cite: 2]"},
+    {no: 10, j: "八", k: "やっ(つ) / ハチ", r: "yattsu", bn: "আট", en: "Eight[cite: 2]"},
+    {no: 11, j: "九", k: "ここの(つ) / キュウ、ク", r: "kokonotsu", bn: "নয়", en: "Nine[cite: 2]"},
+    {no: 12, j: "十", k: "とお / ジュウ", r: "too", bn: "দশ", en: "Ten[cite: 2]"},
+    {no: 13, j: "月", k: "つき / ゲツ、ガツ", r: "tsuki", bn: "চাঁদ / মাস", en: "Moon, Month[cite: 2]"},
+    {no: 14, j: "火", k: "ひ / カ", r: "hi", bn: "আগুন", en: "Fire[cite: 2]"},
+    {no: 15, j: "水", k: "みず / スイ", r: "mizu", bn: "পানি", en: "Water[cite: 2]"},
+    {no: 16, j: "木", k: "き / モク", r: "ki", bn: "গাছ / কাঠ", en: "Tree, Wood[cite: 2]"},
+    {no: 17, j: "金", k: "かね、きん / キン", r: "kane, kin", bn: "সোনা / টাকা", en: "Gold, Money[cite: 2]"},
+    {no: 18, j: "土", k: "つち / ド", r: "tsuchi", bn: "মাটি / পৃথিবী", en: "Soil, Earth[cite: 2]"},
+    {no: 19, j: "百", k: "ヒャク", r: "hyaku", bn: "শত (100)", en: "Hundred[cite: 2]"},
+    {no: 20, j: "千", k: "セン", r: "sen", bn: "হাজার (1000)", en: "Thousand[cite: 2]"},
+    {no: 21, j: "万", k: "マン", r: "man", bn: "দশ হাজার (10,000)", en: "Ten thousand[cite: 2]"},
+    {no: 22, j: "円", k: "エン", r: "en", bn: "জাপানি মুদ্রা (ইয়েন)", en: "Yen[cite: 2]"},
+    {no: 23, j: "行", k: "い(きます) / コウ", r: "ikimasu", bn: "যাওয়া", en: "Go[cite: 2]"},
+    {no: 24, j: "来", k: "き(ます) / ライ", r: "kimasu", bn: "আসা", en: "Come[cite: 2]"},
+    {no: 25, j: "休", k: "やす(みます)", r: "yasumimasu", bn: "বিশ্রাম নেওয়া / ছুটি", en: "Rest[cite: 2]"},
+    {no: 26, j: "見", k: "み(ます) / ケン", r: "mimasu", bn: "দেখা", en: "See, Look[cite: 2]"},
+    {no: 27, j: "今", k: "いま / コン", r: "ima", bn: "এখন", en: "Now[cite: 2]"},
+    {no: 28, j: "大", k: "おお(きい) / ダイ、タイ", r: "ookii", bn: "বড়", en: "Big[cite: 2]"},
+    {no: 29, j: "小", k: "ちい(さい) / ショウ", r: "chiisai", bn: "ছোট", en: "Small[cite: 2]"},
+    {no: 30, j: "上", k: "うえ / ジョウ", r: "ue", bn: "উপরে", en: "On, Above[cite: 2]"},
+    {no: 31, j: "下", k: "した / カ", r: "shita", bn: "নিচে", en: "Under, Below[cite: 2]"},
+    {no: 32, j: "中", k: "なか / チュウ", r: "naka", bn: "ভিতরে", en: "Inside[cite: 2]"},
+    {no: 33, j: "右", k: "みぎ", r: "migi", bn: "ডানে", en: "Right[cite: 2]"},
+    {no: 34, j: "左", k: "ひだり", r: "hidari", bn: "বামে", en: "Left[cite: 2]"},
+    {no: 35, j: "山", k: "やま / サン", r: "yama", bn: "পাহাড়", en: "Mountain[cite: 2]"},
+    {no: 36, j: "川", k: "かわ", r: "kawa", bn: "নদী", en: "River[cite: 2]"},
+    {no: 37, j: "白", k: "しろ(い)", r: "shiroi", bn: "সাদা", en: "White[cite: 2]"},
+    {no: 38, j: "本", k: "ほん / ホン", r: "hon", bn: "বই / মূল", en: "Book, Origin[cite: 2]"},
+    {no: 39, j: "子", k: "こ", r: "ko", bn: "বাচ্চা / শিশু", en: "Child[cite: 2]"},
+    {no: 40, j: "男", k: "おとこ / ダン", r: "otoko", bn: "পুরুষ / ছেলে", en: "Man, Male[cite: 2]"},
+    {no: 41, j: "女", k: "おんな / ジョ", r: "onna", bn: "মহিলা / মেয়ে", en: "Woman, Female[cite: 2]"},
+    {no: 42, j: "父", k: "ちち", r: "chichi", bn: "বাবা", en: "Father[cite: 2]"},
+    {no: 43, j: "母", k: "はは / ボ", r: "haha", bn: "মা", en: "Mother[cite: 2]"},
+    {no: 44, j: "友", k: "とも", r: "tomo", bn: "বন্ধু", en: "Friend[cite: 2]"},
+    {no: 45, j: "先", k: "さき / セン", r: "saki", bn: "আগে / পূর্বে", en: "Ahead, Previous[cite: 2]"},
+    {no: 46, j: "生", k: "う(まれます) / セイ、ショウ", r: "umamaremu", bn: "জন্মগ্রহণ করা / জীবন", en: "Born, Life[cite: 2]"},
+    {no: 47, j: "学", k: "まな(びます) / ガク", r: "manabimasu", bn: "শিক্ষা করা / অধ্যয়ন", en: "Study, Learning[cite: 2]"},
+    {no: 48, j: "校", k: "コウ", r: "kou", bn: "স্কুল", en: "School[cite: 2]"},
+    {no: 49, j: "何", k: "なに、なん", r: "nani, nan", bn: "কী", en: "What[cite: 2]"},
+    {no: 50, j: "時", k: "とき / ジ", r: "toki", bn: "সময় / ঘণ্টা", en: "Time, Hour[cite: 2]"},
+    {no: 51, j: "間", k: "あいだ / カン", r: "aida", bn: "মধ্যবর্তী সময় / ব্যবধান", en: "Interval, Between[cite: 2]"},
+    {no: 52, j: "分", k: "ふん、ぶん", r: "fun, bun", bn: "মিনিট / অংশ", en: "Minute, Part[cite: 2]"},
+    {no: 53, j: "半", k: "ハン", r: "han", bn: "অর্ধেক", en: "Half[cite: 2]"},
+    {no: 54, j: "毎", k: "マイ", r: "mai", bn: "প্রতি", en: "Every[cite: 2]"},
+    {no: 55, j: "年", k: "とし / ネン", r: "toshi", bn: "বছর / বয়স", en: "Year, Age[cite: 2]"},
+    {no: 56, j: "前", k: "まえ / ゼン", r: "mae", bn: "সামনে / আগে", en: "Before, Front[cite: 2]"},
+    {no: 57, j: "後", k: "うし(ろ)、あと", r: "ushiro, ato", bn: "পরে / পিছে", en: "Behind, Later[cite: 2]"},
+    {no: 58, j: "午", k: "ゴ", r: "go", bn: "দুপুর", en: "Noon[cite: 2]"},
+    {no: 59, j: "名", k: "な / メイ", r: "na", bn: "নাম / বিখ্যাত", en: "Name, Famous[cite: 2]"},
+    {no: 60, j: "車", k: "くるま / シャ", r: "kuruma", bn: "গাড়ি", en: "Car[cite: 2]"},
+    {no: 61, j: "天", k: "テン", r: "ten", bn: "স্বর্গ / আকাশ", en: "Heaven, Sky[cite: 2]"},
+    {no: 62, j: "気", k: "キ", r: "ki", bn: "মন / আবহাওয়া / মেজাজ", en: "Spirit, Mood[cite: 2]"},
+    {no: 63, j: "電", k: "デン", r: "den", bn: "বিদ্যুৎ", en: "Electricity[cite: 2]"},
+    {no: 64, j: "話", k: "はなし / ハナシ", r: "hanasu", bn: "কথা বলা / গল্প", en: "Speak, Talk[cite: 2]"},
+    {no: 65, j: "食", k: "た(べます) / ショク", r: "tabemasu", bn: "খাওয়া", en: "Eat[cite: 2]"},
+    {no: 66, j: "飲", k: "の(みます)", r: "nomimasu", bn: "পান করা", en: "Drink[cite: 2]"},
+    {no: 67, j: "聞", k: "き(きます)", r: "kikimasu", bn: "শোনা / জিজ্ঞাসা করা", en: "Hear, Ask[cite: 2]"},
+    {no: 68, j: "書", k: "か(きます) / ショ", r: "kakimasu", bn: "লেখা", en: "Write[cite: 2]"},
+    {no: 69, j: "読", k: "よ(みます)", r: "yomimasu", bn: "পড়া", en: "Read[cite: 2]"},
+    {no: 70, j: "国", k: "くに / コク", r: "kuni", bn: "দেশ", en: "Country[cite: 2]"},
+    {no: 71, j: "外", k: "そと / ガイ", r: "soto", bn: "বাইরে / বিদেশ", en: "Outside, Foreign[cite: 2]"},
+    {no: 72, j: "語", k: "ゴ", r: "go", bn: "ভাষা", en: "Language[cite: 2]"},
+    {no: 73, j: "入", k: "はい(ります)、い(れます)", r: "hairimasu", bn: "প্রবেশ করা / প্রবেশ করানো", en: "Enter, Put in[cite: 2]"},
+    {no: 74, j: "出", k: "で(ます)、だ(します)", r: "demasu", bn: "বের হওয়া / দেওয়া", en: "Exit, Take out[cite: 2]"},
+    {no: 75, j: "雨", k: "あめ", r: "ame", bn: "বৃষ্টি", en: "Rain[cite: 2]"},
+    {no: 76, j: "東", k: "ひがし / トウ", r: "higashi", bn: "পূর্ব", en: "East[cite: 2]"},
+    {no: 77, j: "西", k: "にし / セイ、サイ", r: "nishi", bn: "পশ্চিম", en: "West[cite: 2]"},
+    {no: 78, j: "南", k: "みなみ", r: "minami", bn: "দক্ষিণ", en: "South[cite: 2]"},
+    {no: 79, j: "北", k: "きた / ホク", r: "kita", bn: "উত্তর", en: "North[cite: 2]"},
+    {no: 80, j: "長", k: "なが(い) / チョウ", r: "nagai", bn: "লম্বা", en: "Long[cite: 2]"},
+    {no: 81, j: "高", k: "たか(い) / コウ", r: "takai", bn: "উঁচু / ব্যয়বহুল", en: "High, Expensive[cite: 2]"},
+    {no: 82, j: "口", k: "くち / コウ", r: "kuchi", bn: "মুখ / প্রবেশপথ", en: "Mouth, Entrance[cite: 2]"},
+    {no: 83, j: "目", k: "め", r: "me", bn: "চোখ", en: "Eye[cite: 2]"},
+    {no: 84, j: "手", k: "て / シュ", r: "te", bn: "হাত", en: "Hand[cite: 2]"},
+    {no: 85, j: "足", k: "あし", r: "ashi", bn: "পা / পায়ের পাতা", en: "Foot, Leg[cite: 2]"},
+    {no: 86, j: "近", k: "ちか(い) / キン", r: "chikai", bn: "কাছাকাছি", en: "Close, Near[cite: 2]"},
+    {no: 87, j: "有", k: "あ(ります) / ユウ", r: "arimasu", bn: "থাকা / বিখ্যাত", en: "Exist, Famous[cite: 2]"},
+    {no: 88, j: "赤", k: "あか(い)", r: "akai", bn: "লাল", en: "Red[cite: 2]"},
+    {no: 89, j: "紙", k: "かみ", r: "kami", bn: "কাগজ", en: "Paper[cite: 2]"},
+    {no: 90, j: "買", k: "か(います)", r: "kaimasu", bn: "কেনা", en: "Buy[cite: 2]"},
+    {no: 91, j: "朝", k: "あさ", r: "asa", bn: "সকাল", en: "Morning[cite: 2]"},
+    {no: 92, j: "昼", k: "ひる", r: "hiru", bn: "দুপুর", en: "Noon, Daytime[cite: 2]"},
+    {no: 93, j: "夕", k: "ゆう", r: "yuu", bn: "সন্ধ্যা", en: "Evening[cite: 2]"},
+    {no: 94, j: "夜", k: "よる", r: "yoru", bn: "রাত", en: "Night[cite: 2]"},
+    {no: 95, j: "私", k: "わたし", r: "watashi", bn: "আমি", en: "I, Me[cite: 2]"},
+    {no: 96, j: "家", k: "いえ", r: "ie", bn: "বাড়ি / পরিবার", en: "House, Family[cite: 2]"},
+    {no: 97, j: "会", k: "あ(います)", r: "aimasu", bn: "দেখা করা", en: "Meet[cite: 2]"},
+    {no: 98, j: "社", k: "シャ", r: "sha", bn: "কোম্পানি / সমাজ", en: "Company, Shrine[cite: 2]"},
+    {no: 99, j: "店", k: "みせ / テン", r: "mise", bn: "দোকান", en: "Shop, Store[cite: 2]"},
+    {no: 100, j: "多", k: "おおい", r: "ooi", bn: "অনেক / প্রচুর", en: "Many, Much[cite: 2]"},
+    {no: 101, j: "少", k: "すこ(し)、すく(ない)", r: "sukoshi", bn: "অল্প / কম", en: "A little, Few[cite: 2]"},
+    {no: 102, j: "古", k: "ふる(い)", r: "furui", bn: "পুরাতন", en: "Old[cite: 2]"},
+    {no: 103, j: "新", k: "あたら(しい) / シン", r: "atarashii", bn: "নতুন", en: "New[cite: 2]"},
+    {no: 104, j: "広", k: "ひろ(い)", r: "hiroi", bn: "প্রশস্ত / বড়", en: "Spacious, Wide[cite: 2]"},
+    {no: 105, j: "安", k: "やす(い) / アン", r: "yasui", bn: "সস্তা / নিরাপদ", en: "Cheap, Peaceful[cite: 2]"},
+    {no: 106, j: "立", k: "た(ちます)", r: "tachimasu", bn: "দাঁড়ানো", en: "Stand[cite: 2]"},
+    {no: 107, j: "知", k: "し(ります)", r: "shirimasu", bn: "জানা", en: "Know[cite: 2]"},
+    {no: 108, j: "言", k: "い(います) / ゴン", r: "iimasu", bn: "বলা", en: "Say, Tell[cite: 2]"},
+    {no: 109, j: "思", k: "おも(います)", r: "omoimasu", bn: "ভাবা / চিন্তা করা", en: "Think[cite: 2]"},
+    {no: 110, j: "歩", k: "ある(きます)", r: "arukimasu", bn: "হাঁটা", en: "Walk[cite: 2]"},
+    {no: 111, j: "走", k: "はし(ります)", r: "hashirimasu", bn: "দৌড়ানো", en: "Run[cite: 2]"},
+    {no: 112, j: "住", k: "す(みます) / ジュウ", r: "sumimasu", bn: "বাস করা", en: "Live[cite: 2]"},
+    {no: 113, j: "空", k: "そら / クウ", r: "sora", bn: "আকাশ", en: "Sky[cite: 2]"},
+    {no: 114, j: "週", k: "シュウ", r: "shuu", bn: "সপ্তাহ", en: "Week[cite: 2]"},
+    {no: 115, j: "魚", k: "さかな", r: "sakana", bn: "মাছ", en: "Fish[cite: 2]"},
+    {no: 116, j: "耳", k: "みみ", r: "mimi", bn: "কান", en: "Ear[cite: 2]"},
+    {no: 117, j: "銀", k: "ギン", r: "gin", bn: "রূপা", en: "Silver[cite: 2]"},
+    {no: 118, j: "道", k: "みち / ドウ", r: "michi", bn: "রাস্তা", en: "Road, Street[cite: 2]"},
+    {no: 119, j: "駅", k: "エキ", r: "eki", bn: "স্টেশন", en: "Station[cite: 2]"},
+    {no: 120, j: "作", k: "つく(ります)", r: "tsukurimasu", bn: "তৈরি করা", en: "Make, Produce[cite: 2]"}
+];
+
+let cardIndex = 0;
+let showMean = true;
+
+let quizList = [];
+let quizIndex = 0;
+let score = 0;
+
+function switchMode(mode, event) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('study-view').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+
+    if (mode === 'study') {
+        if (event) event.target.classList.add('active');
+        document.getElementById('study-view').classList.remove('hidden');
+        renderCard();
+    } else {
+        if (event) event.target.classList.add('active');
+        document.getElementById('quiz-setup').classList.remove('hidden');
+    }
+}
+
+function renderCard() {
+    const item = allKanjiData[cardIndex];
+    document.getElementById('fc-num').innerText = `Kanji #${item.no} of ${allKanjiData.length}`;
+    document.getElementById('fc-jp').innerText = item.j;
+    document.getElementById('fc-kanji').innerText = `${item.k} (${item.r})`;
+    const meanElem = document.getElementById('fc-mean');
+    meanElem.innerText = `${item.bn} / ${item.en}`;
+    meanElem.style.visibility = showMean ? 'visible' : 'hidden';
+}
+
+function nextCard() {
+    cardIndex = (cardIndex + 1) % allKanjiData.length;
+    renderCard();
+}
+
+function prevCard() {
+    cardIndex = (cardIndex - 1 + allKanjiData.length) % allKanjiData.length;
+    renderCard();
+}
+
+function toggleMeaning() {
+    showMean = !showMean;
+    renderCard();
+}
+
+function startQuiz() {
+    const limit = document.getElementById('quiz-limit').value;
+
+    let pool = [...allKanjiData];
+    pool.sort(() => Math.random() - 0.5);
+    const count = limit === 'all' ? pool.length : Math.min(parseInt(limit), pool.length);
+    quizList = pool.slice(0, count);
+
+    quizIndex = 0;
+    score = 0;
+
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.remove('hidden');
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    const q = quizList[quizIndex];
+    document.getElementById('quiz-progress').innerText = `Question ${quizIndex + 1} of ${quizList.length}`;
+    document.getElementById('qz-num').innerText = `Kanji #${q.no}`;
+    document.getElementById('qz-question').innerText = q.j;
+
+    let options = [q];
+    while (options.length < 4) {
+        let rand = allKanjiData[Math.floor(Math.random() * allKanjiData.length)];
+        if (!options.some(opt => opt.no === rand.no)) options.push(rand);
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('qz-options');
+    container.innerHTML = '';
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = `${opt.bn} (${opt.en})`;
+        btn.dataset.correct = (opt.no === q.no);
+        btn.onclick = (e) => handleAnswer(e.target, opt.no === q.no);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(btn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        allBtns.forEach(b => {
+            if (b.dataset.correct === 'true') b.classList.add('correct');
+        });
+    }
+
+    setTimeout(() => {
+        quizIndex++;
+        if (quizIndex < quizList.length) {
+            showQuizQuestion();
+        } else {
+            showQuizResult();
+        }
+    }, 1000);
+}
+
+function showQuizResult() {
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.remove('hidden');
+    document.getElementById('qz-score').innerText = `আপনি ${quizList.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+}
+
+function resetQuiz() {
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.remove('hidden');
+}
+
+renderCard();
+</script>
+</body>
+</html>

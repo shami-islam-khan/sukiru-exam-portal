@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <title>Japanese Lesson 9 Practice</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #ffffff; width: 100%; max-width: 650px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 25px; }
+        
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: #e2e8f0; color: #4a5568; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { background: #2b6cb0; color: white; }
+
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 5px; }
+        select { width: 100%; padding: 10px; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; outline: none; background: white; }
+        select:focus { border-color: #2b6cb0; }
+
+        .btn-primary { width: 100%; padding: 12px; background: #2b6cb0; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #2c5282; }
+
+        /* Flashcard Styles */
+        .card-box { background: #edf2f7; border-radius: 12px; padding: 25px; text-align: center; margin-top: 15px; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .jp-text { font-size: 2.2rem; font-weight: bold; color: #2d3748; margin-bottom: 5px; }
+        .kanji-text { font-size: 1.2rem; color: #718096; margin-bottom: 15px; }
+        .mean-text { font-size: 1.1rem; color: #2b6cb0; font-weight: 600; }
+        .nav-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .nav-btn { flex: 1; padding: 10px; background: #4a5568; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        /* Quiz Styles */
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 10px; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 0.95rem; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: left; transition: 0.2s; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; }
+        .opt-btn.correct { background: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchMode('study', event)">Study (ফ্ল্যাশকার্ড)</button>
+        <button class="tab-btn" onclick="switchMode('quiz', event)">Quiz (কুইজ)</button>
+    </div>
+
+    <!-- FLASHCARD MODE -->
+    <div id="study-view">
+        <div class="form-group">
+            <label for="study-cat">ক্যাটাগরি নির্বাচন করুন:</label>
+            <select id="study-cat" onchange="loadCategoryWords()">
+                <option value="all">সব একসাথে (All Vocabulary)</option>
+                <option value="verbs_adj">ক্রিয়াপদ ও বিশেষণ (Verbs & Adjectives)</option>
+                <option value="nouns">বিশেষ্য ও বিষয়সমূহ (Nouns & Arts/Sports)</option>
+                <option value="family">পরিবার (Family Terms)</option>
+                <option value="adverbs">ক্রিয়াবিশেষণ ও পরিমাণ (Adverbs & Quantity)</option>
+                <option value="phrases">বাক্যাংশ ও কথ্য অভিব্যক্তি (Phrases & Expressions)</option>
+            </select>
+        </div>
+
+        <div class="card-box">
+            <div class="jp-text" id="fc-jp">わかりやす</div>
+            <div class="kanji-text" id="fc-kanji">分かります (wakarimasu)</div>
+            <div class="mean-text" id="fc-mean">বুঝতে পারা / Understand</div>
+        </div>
+
+        <div class="nav-btns">
+            <button class="nav-btn" onclick="prevCard()">আগেরটি</button>
+            <button class="nav-btn" onclick="toggleMeaning()">অর্থ লুকান/দেখুন</button>
+            <button class="nav-btn" onclick="nextCard()">পরেরটি</button>
+        </div>
+    </div>
+
+    <!-- QUIZ SETUP MODE -->
+    <div id="quiz-setup" class="hidden">
+        <h2 style="font-size: 1.3rem; color: #2d3748; margin-bottom: 15px;">Lesson 9 Quiz Setup</h2>
+        <div class="form-group">
+            <label for="quiz-cat">ক্যাটাগরি:</label>
+            <select id="quiz-cat">
+                <option value="all">সব একসাথে (All)</option>
+                <option value="verbs_adj">ক্রিয়াপদ ও বিশেষণ (Verbs & Adjectives)</option>
+                <option value="nouns">বিশেষ্য ও বিষয়সমূহ (Nouns & Arts/Sports)</option>
+                <option value="family">পরিবার (Family Terms)</option>
+                <option value="adverbs">ক্রিয়াবিশেষণ ও পরিমাণ (Adverbs & Quantity)</option>
+                <option value="phrases">বাক্যাংশ ও কথ্য অভিব্যক্তি (Phrases & Expressions)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quiz-limit">প্রশ্নের সংখ্যা:</label>
+            <select id="quiz-limit">
+                <option value="10">10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="all">সবগুলো</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="startQuiz()">কুইজ শুরু করুন</button>
+    </div>
+
+    <!-- QUIZ ACTIVE MODE -->
+    <div id="quiz-active" class="hidden">
+        <div class="progress" id="quiz-progress">Question 1 of 10</div>
+        <div class="card-box" style="min-height: 120px;">
+            <div class="jp-text" id="qz-question">わかりやす</div>
+        </div>
+        <div class="options-grid" id="qz-options"></div>
+    </div>
+
+    <!-- QUIZ RESULT MODE -->
+    <div id="quiz-result" class="hidden" style="text-align: center;">
+        <h2 style="color: #2d3748;">কুইজ সম্পন্ন হয়েছে!</h2>
+        <p id="qz-score" style="font-size: 1.2rem; font-weight: bold; color: #2b6cb0; margin: 20px 0;"></p>
+        <button class="btn-primary" onclick="resetQuiz()">আবার চেষ্টা করুন</button>
+    </div>
+</div>
+
+<script>
+const lesson9Data = {
+    verbs_adj: [
+        {j: "わかります", k: "分かります", r: "wakarimasu", bn: "বুঝতে পারা", en: "Understand"},
+        {j: "あります", k: "あります", r: "arimasu", bn: "আছে (বস্তু)", en: "Have (thing)"},
+        {j: "すき [な]", k: "好き [な]", r: "suki [na]", bn: "পছন্দ", en: "Like"},
+        {j: "きらい [な]", k: "嫌い [な]", r: "kirai [na]", bn: "অপছন্দ", en: "Dislike"},
+        {j: "じょうず [な]", k: "上手 [な]", r: "jouzu [na]", bn: "দক্ষ", en: "Good at"},
+        {j: "へた [な]", k: "下手 [な]", r: "heta [na]", bn: "অদক্ষ", en: "Poor at"}
+    ],
+    nouns: [
+        {j: "りょうり", k: "料理", r: "ryouri", bn: "ডিশ (রান্না করা খাবার)", en: "Dish (cooked food)"},
+        {j: "のみもの", k: "飲み物", r: "nomimono", bn: "পানীয়", en: "Drinks"},
+        {j: "スポーツ", k: "スポーツ", r: "supootsu", bn: "খেলাধুলা", en: "Sport"},
+        {j: "やきゅう", k: "野球", r: "yakyuu", bn: "বেসবল", en: "Baseball"},
+        {j: "ダンス", k: "ダンス", r: "dansu", bn: "নাচ, নৃত্য", en: "Dance"},
+        {j: "おんがく", k: "音楽", r: "ongaku", bn: "মিউজিক, সংগীত", en: "Music"},
+        {j: "うた", k: "歌", r: "uta", bn: "গান", en: "Song"},
+        {j: "クラシック", k: "クラシック", r: "kurasshiku", bn: "ক্লাসিক্যাল সংগীত", en: "Classical music"},
+        {j: "ジャズ", k: "ジャズ", r: "jazu", bn: "জাজ", en: "Jazz"},
+        {j: "コンサート", k: "コンサート", r: "konsaato", bn: "কনসার্ট", en: "Concert"},
+        {j: "カラオケ", k: "カラオケ", r: "karaoke", bn: "কারাওকে", en: "Karaoke"},
+        {j: "かぶき", k: "歌舞伎", r: "kabuki", bn: "কাবুকি (জাপানি ট্র্যাডিশনাল থিয়েটার)", en: "Kabuki (traditional Japanese theater)"},
+        {j: "え", k: "絵", r: "e", bn: "ছবি, আঁকা", en: "Picture, drawing"},
+        {j: "じ", k: "字", r: "ji", bn: "বর্ণ / অক্ষর", en: "Letter, character"},
+        {j: "かんじ", k: "漢字", r: "kanji", bn: "চীনাবর্ণমালা (কাঞ্জি)", en: "Chinese characters"},
+        {j: "ひらがな", k: "ひらがな", r: "hiragana", bn: "হিরাগানা", en: "Hiragana script"},
+        {j: "かたかな", k: "かたかな", r: "katakana", bn: "কাতাকানা", en: "Katakana script"},
+        {j: "ローマじ", k: "ローマ字", r: "roomaji", bn: "রোমান বর্ণমালা", en: "The Roman alphabet"},
+        {j: "こまかい おかね", k: "細かい お金", r: "komakai okane", bn: "খুচরা ভাঙতি টাকা", en: "Small change"},
+        {j: "チケット", k: "チケット", r: "chiketto", bn: "টিকিট", en: "Ticket"},
+        {j: "じかん", k: "時間", r: "jikan", bn: "সময়", en: "Time"},
+        {j: "ようじ", k: "用事", r: "youji", bn: "কিছু করা, কাজ / ব্যস্ততা", en: "Something to do, errand"},
+        {j: "やくそく", k: "約束", r: "yakusoku", bn: "প্রতিশ্রুতি / অ্যাপয়েন্টমেন্ট", en: "Appointment, promise"}
+    ],
+    family: [
+        {j: "ごしゅじん", k: "ご主人", r: "goshujin", bn: "অন্যের স্বামী", en: "Someone else's husband"},
+        {j: "おっと / しゅじん", k: "夫 / 主人", r: "otto / shujin", bn: "নিজের স্বামী", en: "My husband"},
+        {j: "おくさん", k: "奥さん", r: "okusan", bn: "অন্যের বউ/স্ত্রী", en: "Someone else's wife"},
+        {j: "つま / かない", k: "妻 / 家内", r: "tsuma / kanai", bn: "নিজের বউ/স্ত্রী", en: "My wife"},
+        {j: "こども", k: "子供", r: "kodomo", bn: "শিশু, বাচ্চা", en: "Child"}
+    ],
+    adverbs: [
+        {j: "よく", k: "よく", r: "yoku", bn: "ভালো, বেশি", en: "Well, much"},
+        {j: "だいたい", k: "だいたい", r: "daitai", bn: "অধিকাংশ, বেশিরভাগ", en: "Mostly, roughly"},
+        {j: "たくさん", k: "たくさん", r: "takusan", bn: "অনেক, প্রচুর", en: "Many, much"},
+        {j: "すこし", k: "少し", r: "sukoshi", bn: "কম, অল্প পরিমাণ", en: "A little, a few"},
+        {j: "ぜんぜん", k: "全然", r: "zenzen", bn: "একদমই না (না-বোধক)", en: "Not at all (negative)"},
+        {j: "はやく", k: "早く", r: "hayaku", bn: "দ্রুত, তাড়াতাড়ি / আগে", en: "Early, quickly, fast"},
+        {j: "～から", k: "～から", r: "~kara", bn: "বলে, কারণ～", en: "Because ~"},
+        {j: "どうして / なぜ", k: "どうして / なぜ", r: "doushite / naze", bn: "কেন", en: "Why"}
+    ],
+    phrases: [
+        {j: "ざんねんですね", k: "残念ですね", r: "zannendesune", bn: "দুঃখিত (কিছু শুনে) / এটা সুন্দর!", en: "I'm sorry (to hear that) / That's a pity."},
+        {j: "すみません", k: "すみません", r: "sumimasen", bn: "আমি দুঃখিত / ক্ষমা করবেন", en: "I am sorry."},
+        {j: "もしもし", k: "もしもし", r: "moshimoshi", bn: "হ্যালো (ফোনে কথা বলা)", en: "Hello (on phone)"},
+        {j: "ああ", k: "ああ", r: "aa", bn: "আহ্", en: "Oh"},
+        {j: "いっしょに いかがですか", k: "いっしょに いかがですか", r: "isshoni ikaga desu ka", bn: "আমাদের সাথে যোগ দিবে নাকি?", en: "Won't you join me (us)?"},
+        {j: "[～は] ちょっと……", k: "[～は] ちょっと……", r: "[~wa] chotto...", bn: "একটু সমস্যা [～] (শ্রুতিমধুর ভাবে প্রস্তাব অস্বীকার করা)", en: "[~] is a bit difficult. (an euphemism used when declining an invitation)"},
+        {j: "だめですか", k: "だめですか", r: "dame desu ka", bn: "তাহলে আপনি পারবেন না (আসতে)?", en: "So you cannot (come)?"},
+        {j: "また こんど おねがいします", k: "また 今度 お願いします", r: "mata kondo onegaishimasu", bn: "দয়া করে আমাকে অন্য কোন সময় বলবেন।", en: "Please ask me again some other time."}
+    ]
+};
+
+// FLASHCARD VARS
+let currentCardList = [];
+let cardIndex = 0;
+let showMean = true;
+
+// QUIZ VARS
+let quizList = [];
+let quizIndex = 0;
+let score = 0;
+
+function switchMode(mode, event) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('study-view').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+
+    if (mode === 'study') {
+        if (event) event.target.classList.add('active');
+        document.getElementById('study-view').classList.remove('hidden');
+        loadCategoryWords();
+    } else {
+        if (event) event.target.classList.add('active');
+        document.getElementById('quiz-setup').classList.remove('hidden');
+    }
+}
+
+function loadCategoryWords() {
+    const cat = document.getElementById('study-cat').value;
+    if (cat === 'all') {
+        currentCardList = [];
+        Object.keys(lesson9Data).forEach(k => currentCardList.push(...lesson9Data[k]));
+    } else {
+        currentCardList = [...lesson9Data[cat]];
+    }
+    cardIndex = 0;
+    renderCard();
+}
+
+function renderCard() {
+    const item = currentCardList[cardIndex];
+    document.getElementById('fc-jp').innerText = item.j;
+    document.getElementById('fc-kanji').innerText = `${item.k} (${item.r})`;
+    const meanElem = document.getElementById('fc-mean');
+    meanElem.innerText = `${item.bn} / ${item.en}`;
+    meanElem.style.visibility = showMean ? 'visible' : 'hidden';
+}
+
+function nextCard() {
+    cardIndex = (cardIndex + 1) % currentCardList.length;
+    renderCard();
+}
+
+function prevCard() {
+    cardIndex = (cardIndex - 1 + currentCardList.length) % currentCardList.length;
+    renderCard();
+}
+
+function toggleMeaning() {
+    showMean = !showMean;
+    renderCard();
+}
+
+// QUIZ LOGIC
+function startQuiz() {
+    const cat = document.getElementById('quiz-cat').value;
+    const limit = document.getElementById('quiz-limit').value;
+
+    let pool = [];
+    if (cat === 'all') {
+        Object.keys(lesson9Data).forEach(k => pool.push(...lesson9Data[k]));
+    } else {
+        pool = [...lesson9Data[cat]];
+    }
+
+    pool.sort(() => Math.random() - 0.5);
+    const count = limit === 'all' ? pool.length : Math.min(parseInt(limit), pool.length);
+    quizList = pool.slice(0, count);
+
+    quizIndex = 0;
+    score = 0;
+
+    document.getElementById('quiz-setup').classList.add('hidden');
+    document.getElementById('quiz-active').classList.remove('hidden');
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    const q = quizList[quizIndex];
+    document.getElementById('quiz-progress').innerText = `Question ${quizIndex + 1} of ${quizList.length}`;
+    document.getElementById('qz-question').innerText = q.j;
+
+    let allPool = [];
+    Object.keys(lesson9Data).forEach(k => allPool.push(...lesson9Data[k]));
+
+    let options = [q];
+    while (options.length < 4) {
+        let rand = allPool[Math.floor(Math.random() * allPool.length)];
+        if (!options.some(opt => opt.j === rand.j)) options.push(rand);
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('qz-options');
+    container.innerHTML = '';
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = `${opt.bn} (${opt.en})`;
+        btn.dataset.correct = (opt.j === q.j);
+        btn.onclick = (e) => handleAnswer(e.target, opt.j === q.j);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(btn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        allBtns.forEach(b => {
+            if (b.dataset.correct === 'true') b.classList.add('correct');
+        });
+    }
+
+    setTimeout(() => {
+        quizIndex++;
+        if (quizIndex < quizList.length) {
+            showQuizQuestion();
+        } else {
+            showQuizResult();
+        }
+    }, 1000);
+}
+
+function showQuizResult() {
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-result').classList.remove('hidden');
+    document.getElementById('qz-score').innerText = `আপনি ${quizList.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+}
+
+function resetQuiz() {
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('quiz-setup').classList.remove('hidden');
+}
+
+// Initial Load
+loadCategoryWords();
+</script>
+</body>
+</html>

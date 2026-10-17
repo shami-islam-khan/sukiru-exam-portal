@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese Kana Quiz System</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 480px; text-align: center; }
+        h1 { color: #1a202c; font-size: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; text-align: left; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 0.5rem; }
+        select { width: 100%; padding: 0.8rem; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; background: white; outline: none; }
+        select:focus { border-color: #3182ce; }
+        button.start-btn { width: 100%; padding: 0.9rem; background: #3182ce; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 1rem; }
+        button.start-btn:hover { background: #2b6cb0; }
+        
+        /* Quiz UI */
+        .hidden { display: none; }
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 0.5rem; }
+        .char-display { font-size: 5.5rem; margin: 0.5rem 0; color: #2d3748; font-weight: bold; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1.5rem; }
+        
+        /* Interactive Option Buttons */
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 1.1rem; padding: 0.9rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; border-color: #cbd5e0; }
+        .opt-btn:disabled { cursor: not-allowed; }
+        
+        /* Feedback Colors */
+        .opt-btn.correct { background-color: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background-color: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- SETUP SCREEN -->
+    <div id="setup-screen">
+        <h1 id="ui-title">Japanese Practice Quiz</h1>
+        
+        <!-- Language Selector -->
+        <div class="form-group">
+            <label for="lang">Language / ভাষা:</label>
+            <select id="lang" onchange="updateLanguageUI()">
+                <option value="both">Both (English + বাংলা)</option>
+                <option value="bn">বাংলা (Bangla)</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <!-- Script Type Selector -->
+        <div class="form-group">
+            <label id="lbl-category" for="category">Select Character Set:</label>
+            <select id="category">
+                <option value="main" id="opt-main">Basic Hiragana (あ, い, う...)</option>
+                <option value="tenten" id="opt-tenten">Ten-ten / Dakuten (が, ざ, だ...)</option>
+                <option value="maru" id="opt-maru">Maru / Handakuten (ぱ, ぴ, ぷ...)</option>
+                <option value="all_kana" id="opt-all">All Hiragana Combined</option>
+            </select>
+        </div>
+
+        <!-- Questions Limit Selector -->
+        <div class="form-group">
+            <label id="lbl-limit" for="limit">Select Questions Limit:</label>
+            <select id="limit">
+                <option value="10">10 Questions</option>
+                <option value="30">30 Questions</option>
+                <option value="50">50 Questions</option>
+                <option value="all">All Available</option>
+            </select>
+        </div>
+
+        <button class="start-btn" id="btn-start" onclick="startQuiz()">Start Practice</button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="hidden">
+        <div class="progress" id="progress-text">Question 1 of 10</div>
+        <div class="char-display" id="kana-display">あ</div>
+        <div class="options-grid" id="options-container"></div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden">
+        <h1 id="res-title">Quiz Complete!</h1>
+        <p id="score-text" style="font-size: 1.2rem; margin: 1.5rem 0; color: #2d3748; font-weight: 600;"></p>
+        <button class="start-btn" id="btn-restart" onclick="resetQuiz()">Practice Again</button>
+    </div>
+</div>
+
+<script>
+// Data Sets with Romaji & Bangla Sound Notation
+const dataSets = {
+    main: [
+        {k: "あ", r: "a", bn: "আ"}, {k: "い", r: "i", bn: "ই"}, {k: "う", r: "u", bn: "উ"}, {k: "え", r: "e", bn: "এ"}, {k: "お", r: "o", bn: "ও"},
+        {k: "か", r: "ka", bn: "কা"}, {k: "き", r: "ki", bn: "কি"}, {k: "く", r: "ku", bn: "কু"}, {k: "け", r: "ke", bn: "কে"}, {k: "こ", r: "ko", bn: "কো"},
+        {k: "さ", r: "sa", bn: "সা"}, {k: "し", r: "shi", bn: "শি"}, {k: "す", r: "su", bn: "সু"}, {k: "せ", r: "se", bn: "সে"}, {k: "そ", r: "so", bn: "সো"},
+        {k: "た", r: "ta", bn: "তা"}, {k: "ち", r: "chi", bn: "চি"}, {k: "つ", r: "tsu", bn: "ত্সু"}, {k: "て", r: "te", bn: "তে"}, {k: "と", r: "to", bn: "তো"},
+        {k: "な", r: "na", bn: "না"}, {k: "に", r: "ni", bn: "নি"}, {k: "ぬ", r: "nu", bn: "নু"}, {k: "ね", r: "ne", bn: "নে"}, {k: "の", r: "no", bn: "নো"},
+        {k: "は", r: "ha", bn: "হা"}, {k: "ひ", r: "hi", bn: "হি"}, {k: "ふ", r: "fu", bn: "ফু"}, {k: "へ", r: "he", bn: "হে"}, {k: "ほ", r: "ho", bn: "হো"},
+        {k: "ま", r: "ma", bn: "মা"}, {k: "み", r: "mi", bn: "মি"}, {k: "む", r: "mu", bn: "মু"}, {k: "め", r: "me", bn: "মে"}, {k: "も", r: "mo", bn: "মো"},
+        {k: "や", r: "ya", bn: "ইয়া"}, {k: "ゆ", r: "yu", bn: "ইউ"}, {k: "よ", r: "yo", bn: "ইয়ো"},
+        {k: "ら", r: "ra", bn: "রা"}, {k: "り", r: "ri", bn: "রি"}, {k: "る", r: "ru", bn: "রু"}, {k: "れ", r: "re", bn: "রে"}, {k: "ろ", r: "ro", bn: "রো"},
+        {k: "わ", r: "wa", bn: "ওয়া"}, {k: "を", r: "wo", bn: "ও (wo)"}, {k: "ん", r: "n", bn: "ন্"}
+    ],
+    tenten: [
+        {k: "が", r: "ga", bn: "গা"}, {k: "ぎ", r: "gi", bn: "গি"}, {k: "ぐ", r: "gu", bn: "গু"}, {k: "げ", r: "ge", bn: "গে"}, {k: "ご", r: "go", bn: "গো"},
+        {k: "ざ", r: "za", bn: "জা (za)"}, {k: "じ", r: "ji", bn: "জি"}, {k: "ず", r: "zu", bn: "জু (zu)"}, {k: "ぜ", r: "ze", bn: "জে (ze)"}, {k: "ぞ", r: "zo", bn: "জো (zo)"},
+        {k: "だ", r: "da", bn: "দা"}, {k: "ぢ", r: "ji", bn: "জি (dji)"}, {k: "づ", r: "zu", bn: "জু (dzu)"}, {k: "で", r: "de", bn: "দে"}, {k: "ど", r: "do", bn: "দো"},
+        {k: "ば", r: "ba", bn: "বা"}, {k: "び", r: "bi", bn: "বি"}, {k: "ぶ", r: "bu", bn: "বু"}, {k: "べ", r: "be", bn: "বে"}, {k: "ぼ", r: "bo", bn: "বো"}
+    ],
+    maru: [
+        {k: "ぱ", r: "pa", bn: "পা"}, {k: "ぴ", r: "pi", bn: "পি"}, {k: "ぷ", r: "pu", bn: "পু"}, {k: "ぺ", r: "pe", bn: "পে"}, {k: "ぽ", r: "po", bn: "পো"}
+    ]
+};
+
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let selectedLang = 'both';
+
+function updateLanguageUI() {
+    selectedLang = document.getElementById('lang').value;
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('ui-title').innerText = "জাপানি ক্যানা প্র্যাকটিস কুইজ";
+        document.getElementById('lbl-category').innerText = "বর্ণমালা সিলেক্ট করুন:";
+        document.getElementById('opt-main').innerText = "বেসিক হিরাগানা (あ, い, う...)";
+        document.getElementById('opt-tenten').innerText = "তেন-তেন / ডাকুতেন (が, ざ, だ...)";
+        document.getElementById('opt-maru').innerText = "মারু / হানডাকুতেন (ぱ, ぴ, ぷ...)";
+        document.getElementById('opt-all').innerText = "সব হিরাগানা একসাথে";
+        document.getElementById('lbl-limit').innerText = "প্রশ্নের সংখ্যা নির্ধারণ করুন:";
+        document.getElementById('btn-start').innerText = "প্র্যাকটিস শুরু করুন";
+    } else if (selectedLang === 'en') {
+        document.getElementById('ui-title').innerText = "Japanese Practice Quiz";
+        document.getElementById('lbl-category').innerText = "Select Character Set:";
+        document.getElementById('opt-main').innerText = "Basic Hiragana (あ, い, う...)";
+        document.getElementById('opt-tenten').innerText = "Ten-ten / Dakuten (が, ざ, だ...)";
+        document.getElementById('opt-maru').innerText = "Maru / Handakuten (ぱ, ぴ, ぷ...)";
+        document.getElementById('opt-all').innerText = "All Hiragana Combined";
+        document.getElementById('lbl-limit').innerText = "Select Questions Limit:";
+        document.getElementById('btn-start').innerText = "Start Practice";
+    } else {
+        document.getElementById('ui-title').innerText = "Japanese Practice Quiz (জাপানি কুইজ)";
+        document.getElementById('lbl-category').innerText = "Select Character Set / বর্ণমালা সিলেক্ট করুন:";
+        document.getElementById('opt-main').innerText = "Basic Hiragana (あ, い, う...)";
+        document.getElementById('opt-tenten').innerText = "Ten-ten / Dakuten (が, ざ, だ...)";
+        document.getElementById('opt-maru').innerText = "Maru / Handakuten (ぱ, ぴ, ぷ...)";
+        document.getElementById('opt-all').innerText = "All Hiragana Combined (সব একসাথে)";
+        document.getElementById('lbl-limit').innerText = "Select Limit / প্রশ্নের সংখ্যা:";
+        document.getElementById('btn-start').innerText = "Start Practice / শুরু করুন";
+    }
+}
+
+function getFormattedOption(item) {
+    if (selectedLang === 'bn') return item.bn;
+    if (selectedLang === 'en') return item.r;
+    return `${item.r} (${item.bn})`; // Both
+}
+
+function startQuiz() {
+    const category = document.getElementById('category').value;
+    const limitVal = document.getElementById('limit').value;
+
+    let pool = [];
+    if (category === 'all_kana') {
+        pool = [...dataSets.main, ...dataSets.tenten, ...dataSets.maru];
+    } else {
+        pool = [...dataSets[category]];
+    }
+
+    pool.sort(() => Math.random() - 0.5);
+
+    const limit = limitVal === 'all' ? pool.length : Math.min(parseInt(limitVal), pool.length);
+    currentQuestions = pool.slice(0, limit);
+
+    currentIndex = 0;
+    score = 0;
+
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+
+    showQuestion();
+}
+
+function showQuestion() {
+    const q = currentQuestions[currentIndex];
+    
+    // Progress bar text according to language
+    if (selectedLang === 'bn') {
+        document.getElementById('progress-text').innerText = `প্রশ্ন ${currentIndex + 1} / ${currentQuestions.length}`;
+    } else {
+        document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} of ${currentQuestions.length}`;
+    }
+
+    document.getElementById('kana-display').innerText = q.k;
+
+    // Pick 1 correct and 3 wrong options
+    const allPool = [...dataSets.main, ...dataSets.tenten, ...dataSets.maru];
+    let options = [q];
+
+    while (options.length < 4) {
+        let randItem = allPool[Math.floor(Math.random() * allPool.length)];
+        if (!options.some(opt => opt.r === randItem.r)) {
+            options.push(randItem);
+        }
+    }
+
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = getFormattedOption(opt);
+        btn.dataset.correct = (opt.r === q.r);
+        btn.onclick = (e) => handleAnswer(e.target, opt.r === q.r);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(selectedBtn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    
+    // Disable all buttons to prevent double click
+    allBtns.forEach(btn => btn.disabled = true);
+
+    if (isCorrect) {
+        selectedBtn.classList.add('correct');
+        score++;
+    } else {
+        selectedBtn.classList.add('wrong');
+        // Highlight the correct one
+        allBtns.forEach(btn => {
+            if (btn.dataset.correct === "true") {
+                btn.classList.add('correct');
+            }
+        });
+    }
+
+    // Wait 1 second before moving to the next question
+    setTimeout(() => {
+        currentIndex++;
+        if (currentIndex < currentQuestions.length) {
+            showQuestion();
+        } else {
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function endQuiz() {
+    document.getElementById('quiz-screen').classList.add('hidden');
+    document.getElementById('result-screen').classList.remove('hidden');
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('res-title').innerText = "কুইজ সম্পন্ন হয়েছে!";
+        document.getElementById('score-text').innerText = `আপনি ${currentQuestions.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+        document.getElementById('btn-restart').innerText = "আবার প্র্যাকটিস করুন";
+    } else {
+        document.getElementById('res-title').innerText = "Quiz Complete!";
+        document.getElementById('score-text').innerText = `You scored ${score} out of ${currentQuestions.length}!`;
+        document.getElementById('btn-restart').innerText = "Practice Again";
+    }
+}
+
+function resetQuiz() {
+    document.getElementById('result-screen').classList.add('hidden');
+    document.getElementById('setup-screen').classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>

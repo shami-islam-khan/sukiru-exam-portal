@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/logo.png">
+    <title>Japanese Numbers Quiz</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        h1 { color: #1a202c; font-size: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; text-align: left; }
+        label { font-weight: 600; font-size: 0.9rem; color: #4a5568; display: block; margin-bottom: 0.5rem; }
+        select { width: 100%; padding: 0.8rem; border: 1.5px solid #cbd5e0; border-radius: 8px; font-size: 0.95rem; background: white; outline: none; }
+        select:focus { border-color: #3182ce; }
+        button.start-btn { width: 100%; padding: 0.9rem; background: #3182ce; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 1rem; }
+        button.start-btn:hover { background: #2b6cb0; }
+        
+        /* Quiz UI */
+        .hidden { display: none; }
+        .progress { font-size: 0.9rem; color: #718096; font-weight: 600; margin-bottom: 0.5rem; }
+        .char-display { font-size: 2.8rem; margin: 0.8rem 0; color: #2d3748; font-weight: bold; word-break: break-all; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 1.5rem; }
+        
+        .opt-btn { background: #edf2f7; color: #2d3748; border: 2px solid #e2e8f0; font-size: 1rem; padding: 0.85rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; text-align: center; }
+        .opt-btn:hover:not([disabled]) { background: #e2e8f0; border-color: #cbd5e0; }
+        .opt-btn:disabled { cursor: not-allowed; }
+        
+        .opt-btn.correct { background-color: #48bb78 !important; color: white !important; border-color: #38a169 !important; }
+        .opt-btn.wrong { background-color: #f56565 !important; color: white !important; border-color: #e53e3e !important; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- SETUP SCREEN -->
+    <div id="setup-screen">
+        <h1 id="ui-title">Japanese Numbers Quiz (সংখ্যা গণনা কুইজ)</h1>
+        
+        <div class="form-group">
+            <label for="lang">Language / ভাষা:</label>
+            <select id="lang" onchange="updateLanguageUI()">
+                <option value="both">Both (English + বাংলা)</option>
+                <option value="bn">বাংলা (Bangla)</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lbl-category" for="category">Select Category / ক্যাটাগরি:</label>
+            <select id="category">
+                <option value="basic" id="opt-basic">1 to 10 & Multiples (১-৯০, ১০০, ১০০০...)</option>
+                <option value="hundreds" id="opt-hundreds">Hundreds & Exceptions (১০০ - ৯০০)</option>
+                <option value="big_numbers" id="opt-big">Custom Big Numbers (হাতে লেখা বড় সংখ্যাগুলো)</option>
+                <option value="all" id="opt-all">All Combined (সব একসাথে)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="lbl-limit" for="limit">Select Questions Limit / প্রশ্নের সংখ্যা:</label>
+            <select id="limit">
+                <option value="10">10 Questions</option>
+                <option value="20">20 Questions</option>
+                <option value="all">All Available</option>
+            </select>
+        </div>
+
+        <button class="start-btn" id="btn-start" onclick="startQuiz()">Start Practice / শুরু করুন</button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="hidden">
+        <div class="progress" id="progress-text">Question 1 of 10</div>
+        <div class="char-display" id="num-display">1</div>
+        <div class="options-grid" id="options-container"></div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden">
+        <h1 id="res-title">Quiz Complete!</h1>
+        <p id="score-text" style="font-size: 1.2rem; margin: 1.5rem 0; color: #2d3748; font-weight: 600;"></p>
+        <button class="start-btn" id="btn-restart" onclick="resetQuiz()">Practice Again</button>
+    </div>
+</div>
+
+<script>
+const dataSets = {
+    basic: [
+        {num: "1", j: "いち", r: "ichi", bn: "ইচি"},
+        {num: "2", j: "に", r: "ni", bn: "নি"},
+        {num: "3", j: "さん", r: "san", bn: "সান"},
+        {num: "4", j: "よん / し", r: "yon / shi", bn: "ইয়ন / শি"},
+        {num: "5", j: "ご", r: "go", bn: "গো"},
+        {num: "6", j: "ろく", r: "roku", bn: "রোকু"},
+        {num: "7", j: "なな / しち", r: "nana / shichi", bn: "নানা / শিচি"},
+        {num: "8", j: "はち", r: "hachi", bn: "হাচি"},
+        {num: "9", j: "きゅう / く", r: "kyuu / ku", bn: "কিউ / কু"},
+        {num: "10", j: "じゅう", r: "juu", bn: "জু"},
+        {num: "20", j: "にじゅう", r: "ni-juu", bn: "নিজু"},
+        {num: "30", j: "さんじゅう", r: "san-juu", bn: "সানজু"},
+        {num: "40", j: "よんじゅう", r: "yon-juu", bn: "ইয়নজু"},
+        {num: "50", j: "ごじゅう", r: "go-juu", bn: "গোজু"},
+        {num: "60", j: "ろくじゅう", r: "roku-juu", bn: "রোকুজু"},
+        {num: "70", j: "ななじゅう", r: "nana-juu", bn: "নানাজু"},
+        {num: "80", j: "はちじゅう", r: "hachi-juu", bn: "হাচিজু"},
+        {num: "90", j: "きゅうじゅう", r: "kyuu-juu", bn: "কিউজুগু"},
+        {num: "100", j: "ひゃく", r: "hyaku", bn: "হিয়াকু"},
+        {num: "1,000", j: "せん", r: "sen", bn: "সেন"},
+        {num: "10,000", j: "いちまん", r: "ichiman", bn: "ইচিমান"},
+        {num: "100,000", j: "じゅうまん", r: "juuman", bn: "জুমান"},
+        {num: "1,000,000", j: "ひゃくまん / いちおく", r: "hyakuman / ichioku", bn: "হিয়াকুমান / ইচিওকু"}
+    ],
+    hundreds: [
+        {num: "100", j: "ひゃく", r: "hyaku", bn: "হিয়াকু"},
+        {num: "200", j: "にひゃく", r: "nihyaku", bn: "নিহিয়াকু"},
+        {num: "300 (Exception)", j: "さんびゃく", r: "sanbyaku", bn: "সানবিয়াকু"},
+        {num: "400", j: "よんひゃく", r: "yonhyaku", bn: "ইয়নহিয়াকু"},
+        {num: "500", j: "ごひゃく", r: "gohyaku", bn: "গোহিয়াকু"},
+        {num: "600 (Exception)", j: "ろっぴゃく", r: "roppyaku", bn: "রোপ্পিয়াকু"},
+        {num: "700", j: "ななひゃく", r: "nanahyaku", bn: "নানাহিয়াকু"},
+        {num: "800 (Exception)", j: "はっぴゃく", r: "happyaku", bn: "হাপ্পিয়াকু"},
+        {num: "900", j: "きゅうひゃく", r: "kyuuhyaku", bn: "কিউহিয়াকু"}
+    ],
+    big_numbers: [
+        {num: "3,100,012", j: "さんびゃくじゅうまん じゅうに", r: "sanbyaku juuman juuni", bn: "সানবিয়াকু জুমান জুনি"},
+        {num: "12,345,678", j: "いっせん にひゃく さんじゅう よんまん ごせん ろっぴゃく ななじゅう はち", r: "issen nihyaku sanjuu yonman gosen roppyaku nanajuu hachi", bn: "ইসেন নিহিয়াকু সানজু ইয়নমান গোসেন রোপ্পিয়াকু নানাজু হাচ্চি"},
+        {num: "10,152,535", j: "せん じゅうごまん にせん ごひゃく さんじゅう ご", r: "sen juugoman nisen gohyaku sanjuu go", bn: "সেন জুগোমান নিসেন গোহিয়াকু সানজু গো"},
+        {num: "40", j: "よんじゅう", r: "yon-juu", bn: "ইয়নজু"}
+    ]
+};
+
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let selectedLang = 'both';
+
+function updateLanguageUI() {
+    selectedLang = document.getElementById('lang').value;
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('ui-title').innerText = "জাপানিজ সংখ্যা কুইজ";
+        document.getElementById('lbl-category').innerText = "ক্যাটাগরি সিলেক্ট করুন:";
+        document.getElementById('opt-basic').innerText = "১ থেকে ১০ এবং গুণিতক (১-৯০, ১০০...)";
+        document.getElementById('opt-hundreds').innerText = "শতক ও ব্যতিক্রমি সংখ্যা (১০০ - ৯০০)";
+        document.getElementById('opt-big').innerText = "বড় সংখ্যাসমূহ (ছবির ডানপাশের নীল লেখা)";
+        document.getElementById('opt-all').innerText = "সব একসাথে";
+        document.getElementById('lbl-limit').innerText = "প্রশ্নের সংখ্যা নির্ধারণ করুন:";
+        document.getElementById('btn-start').innerText = "প্র্যাকটিস শুরু করুন";
+    } else if (selectedLang === 'en') {
+        document.getElementById('ui-title').innerText = "Japanese Numbers Quiz";
+        document.getElementById('lbl-category').innerText = "Select Category:";
+        document.getElementById('opt-basic').innerText = "1 to 10 & Multiples";
+        document.getElementById('opt-hundreds').innerText = "Hundreds & Exceptions";
+        document.getElementById('opt-big').innerText = "Custom Big Numbers";
+        document.getElementById('opt-all').innerText = "All Combined";
+        document.getElementById('lbl-limit').innerText = "Select Questions Limit:";
+        document.getElementById('btn-start').innerText = "Start Practice";
+    } else {
+        document.getElementById('ui-title').innerText = "Japanese Numbers Quiz (সংখ্যা গণনা কুইজ)";
+        document.getElementById('lbl-category').innerText = "Select Category / ক্যাটাগরি:";
+        document.getElementById('opt-basic').innerText = "1 to 10 & Multiples (১-৯০, ১০০, ১০০০...)";
+        document.getElementById('opt-hundreds').innerText = "Hundreds & Exceptions (১০০ - ৯০০)";
+        document.getElementById('opt-big').innerText = "Custom Big Numbers (হাতে লেখা বড় সংখ্যাগুলো)";
+        document.getElementById('opt-all').innerText = "All Combined (সব একসাথে)";
+        document.getElementById('lbl-limit').innerText = "Select Questions Limit / প্রশ্নের সংখ্যা:";
+        document.getElementById('btn-start').innerText = "Start Practice / শুরু করুন";
+    }
+}
+
+function getFormattedOption(item) {
+    if (selectedLang === 'bn') return `${item.j} - ${item.bn}`;
+    if (selectedLang === 'en') return `${item.j} (${item.r})`;
+    return `${item.j} [${item.r}] - ${item.bn}`;
+}
+
+function startQuiz() {
+    const category = document.getElementById('category').value;
+    const limitVal = document.getElementById('limit').value;
+
+    let pool = [];
+    if (category === 'all') {
+        pool = [...dataSets.basic, ...dataSets.hundreds, ...dataSets.big_numbers];
+    } else {
+        pool = [...dataSets[category]];
+    }
+
+    pool.sort(() => Math.random() - 0.5);
+
+    const limit = limitVal === 'all' ? pool.length : Math.min(parseInt(limitVal), pool.length);
+    currentQuestions = pool.slice(0, limit);
+
+    currentIndex = 0;
+    score = 0;
+
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+
+    showQuestion();
+}
+
+function showQuestion() {
+    const q = currentQuestions[currentIndex];
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('progress-text').innerText = `প্রশ্ন ${currentIndex + 1} / ${currentQuestions.length}`;
+    } else {
+        document.getElementById('progress-text').innerText = `Question ${currentIndex + 1} of ${currentQuestions.length}`;
+    }
+
+    document.getElementById('num-display').innerText = q.num;
+
+    const allPool = [...dataSets.basic, ...dataSets.hundreds, ...dataSets.big_numbers];
+    let options = [q];
+
+    while (options.length < 4) {
+        let randItem = allPool[Math.floor(Math.random() * allPool.length)];
+        if (!options.some(opt => opt.j === randItem.j)) {
+            options.push(randItem);
+        }
+    }
+
+    options.sort(() => Math.random() - 0.5);
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerText = getFormattedOption(opt);
+        btn.dataset.correct = (opt.j === q.j);
+        btn.onclick = (e) => handleAnswer(e.target, opt.j === q.j);
+        container.appendChild(btn);
+    });
+}
+
+function handleAnswer(selectedBtn, isCorrect) {
+    const allBtns = document.querySelectorAll('.opt-btn');
+    allBtns.forEach(btn => btn.disabled = true);
+
+    if (isCorrect) {
+        selectedBtn.classList.add('correct');
+        score++;
+    } else {
+        selectedBtn.classList.add('wrong');
+        allBtns.forEach(btn => {
+            if (btn.dataset.correct === "true") {
+                btn.classList.add('correct');
+            }
+        });
+    }
+
+    setTimeout(() => {
+        currentIndex++;
+        if (currentIndex < currentQuestions.length) {
+            showQuestion();
+        } else {
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function endQuiz() {
+    document.getElementById('quiz-screen').classList.add('hidden');
+    document.getElementById('result-screen').classList.remove('hidden');
+    
+    if (selectedLang === 'bn') {
+        document.getElementById('res-title').innerText = "কুইজ সম্পন্ন হয়েছে!";
+        document.getElementById('score-text').innerText = `আপনি ${currentQuestions.length} টির মধ্যে ${score} টি সঠিক উত্তর দিয়েছেন!`;
+        document.getElementById('btn-restart').innerText = "আবার প্র্যাকটিস করুন";
+    } else {
+        document.getElementById('res-title').innerText = "Quiz Complete!";
+        document.getElementById('score-text').innerText = `You scored ${score} out of ${currentQuestions.length}!`;
+        document.getElementById('btn-restart').innerText = "Practice Again";
+    }
+}
+
+function resetQuiz() {
+    document.getElementById('result-screen').classList.add('hidden');
+    document.getElementById('setup-screen').classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>

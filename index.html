@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukiru Academy BD | JLPT N5 Exam Portal</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        torii: '#dc2626',
+                        fox: '#f97316',
+                        sakura: '#f472b6',
+                        flaggreen: '#059669',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <!-- Header / Navigation Bar -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo & Name -->
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-torii to-fox flex items-center justify-center shadow-md shadow-torii/20 text-white font-bold text-xl">
+                    <img src="logo.png" alt="Sukiru Academy Logo" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <span class="text-xl font-black tracking-tight text-slate-900">Sukiru Academy <span class="text-torii">BD</span></span>
+                    <span class="block text-xs text-slate-500 font-medium">JLPT N5 Interactive Exam Portal</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-semibold">
+                <a href="#" class="text-torii transition">Home</a>
+                <a href="#exams" class="text-slate-600 hover:text-torii transition">Exams & Practice</a>
+                <a href="#contact" class="text-slate-600 hover:text-torii transition">Contact</a>
+            </nav>
+
+            <!-- Quick Contact Badge -->
+            <div class="hidden lg:flex items-center space-x-2 px-4 py-2 rounded-xl bg-red-50 border border-red-100 text-torii text-xs font-bold">
+                <i class="fa-solid fa-envelope"></i>
+                <span>sukiruacademybd@gmail.com</span>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="menu-btn" class="md:hidden text-slate-700 hover:text-torii focus:outline-none">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-3 shadow-lg">
+            <a href="#" class="block py-2 text-torii font-bold">Home</a>
+            <a href="#exams" class="block py-2 text-slate-700">Exams & Practice</a>
+            <a href="#contact" class="block py-2 text-slate-700">Contact</a>
+            <div class="pt-2 text-xs font-bold text-torii break-all">
+                <i class="fa-solid fa-envelope mr-1"></i> sukiruacademybd@gmail.com
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-16 md:pt-40 md:pb-24 bg-gradient-to-b from-red-50/40 via-white to-slate-50 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6">
+            <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-red-100/80 border border-red-200 text-torii text-xs font-bold uppercase tracking-wider">
+                <span class="w-2 h-2 rounded-full bg-torii animate-ping"></span>
+                <span>JLPT N5 Professional Exam & Practice Platform</span>
+            </div>
+            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight max-w-4xl mx-auto">
+                Test Your Japanese Proficiency with <span class="text-torii">Sukiru Exams</span>
+            </h1>
+            <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+                Select your module below to jump straight into pre-prepared interactive practice exams and test your mastery instantly.
+            </p>
+            <div class="pt-4 flex justify-center">
+                <a href="#exams" class="px-8 py-4 rounded-2xl bg-torii hover:bg-red-700 text-white font-bold shadow-lg shadow-torii/30 transition transform hover:-translate-y-0.5">
+                    Choose Your Exam Card <i class="fa-solid fa-arrow-down ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Exams Cards Section (31 Modules) -->
+    <section id="exams" class="py-16 md:py-20 bg-slate-50 border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto space-y-4 mb-16">
+                <h2 class="text-xs font-bold text-torii uppercase tracking-widest">Exam Portals</h2>
+                <h3 class="text-2xl sm:text-4xl font-extrabold text-slate-900">Select a Module to Start Exam</h3>
+                <p class="text-slate-600 text-sm sm:text-base">Click any card below to instantly open the respective exam file.</p>
+            </div>
+
+            <!-- Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                
+                <!-- 1. Hiragana -->
+                <a href="/Class2 (Hiragana)/class2.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">あ</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">1. Hiragana</h4>
+                        <p class="text-slate-500 text-sm mb-6">Test foundational Hiragana characters and reading speed.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 2. Katakana -->
+                <a href="Class3 (Katakana)/class3.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">ア</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">2. Katakana</h4>
+                        <p class="text-slate-500 text-sm mb-6">Test Katakana recognition for foreign loan words.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 3. Number -->
+                <a href="Class4 (Number)/class4.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">一</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">3. Number</h4>
+                        <p class="text-slate-500 text-sm mb-6">Test Japanese numbers and numerical reading.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 4. Counting -->
+                <a href="Class5 (Counting)/class5.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">枚</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">4. Counting</h4>
+                        <p class="text-slate-500 text-sm mb-6">Test object counters and numerical classifiers.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 5. Time -->
+                <a href="Class6 (Time)/class6.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">時</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">5. Time</h4>
+                        <p class="text-slate-500 text-sm mb-6">Test hours, minutes, days, and calendar expressions.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 6. Lesson 1 -->
+                <a href="Class7 (Lesson1)/class7.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">L1</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">6. Lesson 1</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 1.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 7. Lesson 2 -->
+                <a href="Class8 (Lesson2)/class8.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">L2</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">7. Lesson 2</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 2.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 8. Lesson 3 -->
+                <a href="Class9 (Lesson3)/class9.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">L3</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">8. Lesson 3</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 3.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 9. Lesson 4 -->
+                <a href="Class10 (Lesson4)/class10.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">L4</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">9. Lesson 4</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 4.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 10. Lesson 5 -->
+                <a href="Class11 (Lesson5)/class11.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">L5</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">10. Lesson 5</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 5.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 11. Lesson 6 -->
+                <a href="Class12 (Lesson6)/class12.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">L6</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">11. Lesson 6</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 6.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 12. Lesson 7 -->
+                <a href="Class13 (Lesson7)/class13.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">L7</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">12. Lesson 7</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 7.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 13. Lesson 8 -->
+                <a href="Class14 (Lesson8)/class14.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">L8</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">13. Lesson 8</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 8.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 14. Lesson 9 -->
+                <a href="Class15 (Lesson9)/class15.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">L9</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">14. Lesson 9</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 9.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 15. Lesson 10 -->
+                <a href="Class16 (Lesson10)/class16.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">L10</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">15. Lesson 10</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 10.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 16. Lesson 11 -->
+                <a href="Class17 (Lesson11)/class17.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">L11</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">16. Lesson 11</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 11.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 17. Lesson 12 -->
+                <a href="Class18 (Lesson12)/class18.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">L12</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">17. Lesson 12</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 12.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 18. Lesson 13 -->
+                <a href="Class19 (Lesson13)/class19.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">L13</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">18. Lesson 13</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 13.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 19. Lesson 14 -->
+                <a href="Class20 (Lesson14)/class20.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">L14</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">19. Lesson 14</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 14.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 20. Lesson 15 -->
+                <a href="Class21 (Lesson15)/class21.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">L15</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">20. Lesson 15</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 15.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 21. Lesson 16 -->
+                <a href="Class22 (Lesson16)/class22.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">L16</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">21. Lesson 16</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 16.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 22. Lesson 17 -->
+                <a href="Class23 (Lesson17)/class23.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">L17</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">22. Lesson 17</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 17.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 23. Lesson 18 -->
+                <a href="Class24 (Lesson18)/class24.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">L18</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">23. Lesson 18</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 18.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 24. Lesson 19 -->
+                <a href="Class25 (Lesson19)/class25.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">L19</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">24. Lesson 19</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 19.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 25. Lesson 20 -->
+                <a href="Class26 (Lesson20)/class26.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">L20</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">25. Lesson 20</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 20.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 26. Lesson 21 -->
+                <a href="Class27 (Lesson21)/class27.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">L21</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">26. Lesson 21</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 21.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 27. Lesson 22 -->
+                <a href="Class28 (Lesson22)/class28.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">L22</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">27. Lesson 22</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 22.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 28. Lesson 23 -->
+                <a href="Class29 (Lesson23)/class29.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">L23</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">28. Lesson 23</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 23.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 29. Lesson 24 -->
+                <a href="Class30 (Lesson24)/class30.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-fox transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 text-fox flex items-center justify-center font-black text-lg mb-6 group-hover:bg-fox group-hover:text-white transition">L24</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-fox transition">29. Lesson 24</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 24.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-fox">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 30. Lesson 25 -->
+                <a href="Class31 (Lesson25)/class31.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-flaggreen transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-flaggreen flex items-center justify-center font-black text-lg mb-6 group-hover:bg-flaggreen group-hover:text-white transition">L25</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-flaggreen transition">30. Lesson 25</h4>
+                        <p class="text-slate-500 text-sm mb-6">Grammar and vocabulary test for Lesson 25.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-flaggreen">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+                <!-- 31. Kanji -->
+                <a href="Class32 (kanji)/class32.html" class="group bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-torii transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 text-torii flex items-center justify-center font-black text-lg mb-6 group-hover:bg-torii group-hover:text-white transition">漢字</div>
+                        <h4 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-torii transition">31. Kanji</h4>
+                        <p class="text-slate-500 text-sm mb-6">Test essential JLPT N5 Kanji characters and readings.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-sm font-bold text-torii">
+                        <span>Start Exam</span>
+                        <i class="fa-solid fa-arrow-right transform group-hover:translate-x-1 transition"></i>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section with Email Only -->
+    <footer id="contact" class="bg-white border-t border-slate-200 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 text-center sm:text-left">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-xl bg-torii flex items-center justify-center text-white font-bold text-sm">
+                    <img src="logo.png" alt="Sukiru Academy Logo" class="w-full h-full object-cover">
+                </div>
+                <span class="text-md font-bold text-slate-900">Sukiru Academy BD</span>
+            </div>
+            <div class="text-sm text-slate-600 flex items-center space-x-2 bg-slate-100 px-4 py-2 rounded-xl">
+                <i class="fa-solid fa-envelope text-torii"></i>
+                <span>For any questions or doubts: <strong class="text-slate-900">sukiruacademybd@gmail.com</strong></span>
+            </div>
+            <p class="text-xs text-slate-400">&copy; 2026 Sukiru Academy BD. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Script for Mobile Menu -->
+    <script>
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
